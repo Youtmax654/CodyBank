@@ -42,7 +42,7 @@ accounts = [
         "status": "active"
     }
 ]
-history_transaction = [] 
+transactions = [] 
 
 @app.post("/send_money")
 def send_money(body: CreateTransaction):
@@ -54,6 +54,16 @@ def send_money(body: CreateTransaction):
             if source_account["balance"] >= body.amount:
                 source_account["balance"] -= body.amount
                 destination_account["balance"] += body.amount
+                transactions.append(
+                    {
+                        "amount": body.amount,
+                        "source_account_number":body.source_account_number,
+                        "destination_account_number":body.destination_account_number,
+                        "type":"send",
+                        "timestamp": datetime.now()
+                    }
+                )
+                print(transactions)
                 print (accounts)
                 return {"status": "success"}
             else:
@@ -70,17 +80,27 @@ def deposit(body: Deposit):
     if body.amount > 10 :
         if account:
             account["balance"] += body.amount
-            history_transaction.append(
+            transactions.append(
                 {
-                    "action": "deposit",
                     "amount": body.amount,
+                    "destination_account_number":body.account_number,
+                    "type":"deposit",
                     "timestamp": datetime.now()
                 }
             )
-            print(history_transaction)
+            print(transactions)
             print(accounts) 
             return {"status": "success"}
         else:
             return {"status": "error", "message": "Account not found"}
     else :
         return {"status": "error", "message": "Amount must be greater than 10"}
+    
+@app.get("/transactions")
+def transactions(account_number : str):
+    account_transactions = []
+    for transaction in transactions:
+        if transaction("destination_account_number") == account_number or transaction("source_account_number") == account_number:
+            account_transactions.append(transaction)
+    account_transactions.sort(key=lambda x: x["timestamp"], reverse=True)
+    return {"status": "success"}
