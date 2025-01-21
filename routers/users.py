@@ -1,17 +1,21 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
 
 from models.Account import Account
 from models.User import User
 from utils.db import get_session
-from validator.user import CreateUser
+from schemas.user import CreateUserBody, UserResponse
 
 
 router = APIRouter()
 
 
 @router.post("/register")
-def create_user(body: CreateUser, session=Depends(get_session)):
+def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserResponse:
+    existing_user = session.query(User).filter(User.email == body.email).first()
+    if existing_user:
+        raise HTTPException(status_code=409, detail="Email already exists")
+
     user = User(
         first_name=body.first_name,
         last_name=body.last_name,
@@ -27,12 +31,10 @@ def create_user(body: CreateUser, session=Depends(get_session)):
     session.commit()
     session.refresh(account)
 
-    return {
-        "status": "success",
-        "user": {
-            "id": user.id,
-            "first_name": user.first_name,
-            "last_name": user.last_name,
-            "email": user.email,
-        },
-    }
+    return UserResponse(
+        id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        created_at=user.created_at,
+    )
