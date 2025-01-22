@@ -24,3 +24,20 @@ def get_transactions_by_account_id(session: Session, account_id: int):
         .filter(Transaction.source_account_id == account_id)
         .all()
     )
+
+
+def get_account_by_transaction_id(session: Session, transaction_id: int):
+    transaction = (
+        session.query(Transaction).filter(Transaction.id == transaction_id).first()
+    )
+
+    accounts = (
+        session.query(Account)
+        .filter(
+            (Account.id == transaction.source_account_id)
+            | (Account.id == transaction.destination_account_id)
+        )
+        .all()
+    )
+
+    return accounts
