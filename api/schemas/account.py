@@ -8,4 +8,4 @@ class AccountResponse(BaseModel):
     balance: float
     is_primary: bool
     created_at: datetime
-    status: str
+    status: bool

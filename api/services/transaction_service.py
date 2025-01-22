@@ -6,8 +6,6 @@ from fastapi import HTTPException
 
 def get_account_by_id(session: Session, account_id: int) -> Account:
     account = session.query(Account).filter(Account.id == account_id).first()
-    if not account:
-        raise HTTPException(status_code=404, detail="Account not found")
     return account
 
 

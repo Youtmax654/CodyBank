@@ -9,29 +9,12 @@ router = APIRouter()
 
 
 @router.post("/accounts/", response_model=AccountResponse)
-def create_account(user_id: int, is_primary: bool, session=Depends(get_session)):
-    try:
-        if is_primary:
-            existing_primary = (
-                session.query(Account)
-                .filter(Account.user_id == user_id, Account.is_primary == True)
-                .first()
-            )
-            if existing_primary:
-                raise HTTPException(
-                    status_code=400, detail="User already has a primary account"
-                )
-
-        account = Account(
-            user_id=user_id, balance=0.00, is_primary=is_primary
-        )
-        session.add(account)
-        session.commit()
-        session.refresh(account)
-        return account
-    except Exception:
-        session.rollback()
-        raise HTTPException(status_code=500, detail="Error creating account")
+def create_account(user_id: int, session=Depends(get_session)):
+    account = Account(user_id=user_id, balance=0.00)
+    session.add(account)
+    session.commit()
+    session.refresh(account)
+    return account
 
 
 @router.get("/accounts/", response_model=List[AccountResponse])
