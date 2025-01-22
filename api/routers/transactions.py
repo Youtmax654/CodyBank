@@ -1,3 +1,4 @@
+from api.models.User import Beneficiary
 from api.services.account_service import get_account_by_transaction_id
 from fastapi import APIRouter, Depends, HTTPException
 from api.core.config import algorithm, secret_key
@@ -9,11 +10,13 @@ from api.schemas.transactions import (
     Deposit,
     SendMoney,
 )
+from api.schemas.beneficiary import BeneficiaryResponse, CreateBeneficiary
 from api.services.transaction_service import (
     create_transaction,
     get_account_by_id,
     update_account_balance,
 )
+from api.services.beneficiary_service import create_beneficiary
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()
@@ -134,3 +137,42 @@ def get_transaction(
         raise HTTPException(status_code=403, detail="Unauthorized")
 
     return transaction
+
+
+@router.post("/beneficiaries")
+def create_beneficiary(
+    body: CreateBeneficiary, 
+    session=Depends(get_session),
+    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+):
+    try:
+        decoded_token = jwt.decode(authorization.credentials, secret_key, algorithms=[algorithm])
+        user_id = decoded_token["user_id"]
+
+        source_account = get_account_by_id(session, body.account_id)
+        if not source_account or source_account.user_id != user_id:
+            raise HTTPException(status_code=403, detail="Unauthorized")
+
+        if not source_account.status:
+            raise HTTPException(status_code=403, detail="Account is inactive")
+
+        beneficiary = create_beneficiary(session, body)
+        return beneficiary
+
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/beneficiaries/{account_id}")
+def get_beneficiaries(account_id: int, session=Depends(get_session)):
+    account = get_account_by_id(session, account_id)
+    if not account or not account.status:
+        raise HTTPException(status_code=403, detail="Account is inactive")
+
+    beneficiaries = session.query(Beneficiary).filter(Beneficiary.account_id == account_id).all()
+    return [BeneficiaryResponse(
+        id=beneficiary.id,
+        name=beneficiary.name,
+        account_id=beneficiary.account_id,
+        beneficiary_account_id=beneficiary.beneficiary_account_id,
+        created_at=beneficiary.created_at
+    ) for beneficiary in beneficiaries]
