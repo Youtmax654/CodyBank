@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from api.models.Transaction import Transaction, TransactionStatus
 from api.models.Account import Account
@@ -18,17 +19,45 @@ def update_account_balance(session: Session, account: Account, amount: float):
 
 def create_transaction(
     session: Session,
-    source_account_id: int,
+    source_account_id: int | None,
     destination_account_id: int,
     amount: float,
+    status: TransactionStatus = TransactionStatus.PENDING,
 ):
+
     transaction = Transaction(
         source_account_id=source_account_id,
         destination_account_id=destination_account_id,
         amount=amount,
-        status=TransactionStatus.CONFIRMED,
+        status=status,
     )
     session.add(transaction)
     session.commit()
     session.refresh(transaction)
     return transaction
+
+
+def apply_pending_transactions(session: Session):
+    transactions = (
+        session.query(Transaction)
+        .filter(Transaction.status == TransactionStatus.PENDING)
+        .all()
+    )
+
+    for transaction in transactions:
+        passed_time = datetime.now() - transaction.created_at
+
+        if passed_time > timedelta(seconds=5):
+            transaction.status = TransactionStatus.CONFIRMED
+
+    session.add_all(transactions)
+    session.commit()
+    session.refresh_all(transactions)
+
+
+def get_pending_transactions(session: Session):
+    return (
+        session.query(Transaction)
+        .filter(Transaction.status == TransactionStatus.PENDING)
+        .all()
+    )

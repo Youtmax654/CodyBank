@@ -4,8 +4,8 @@ from datetime import datetime
 
 
 class TransactionStatus(Enum):
-    CONFIRMED = "confirmed"
-    PENDING = "pending"
+    CONFIRMED = "CONFIRMED"
+    PENDING = "PENDING"
     CANCELED = "CANCELED"
 
 
@@ -15,4 +15,4 @@ class Transaction(SQLModel, table=True):
     destination_account_id: int = Field(foreign_key="account.id")
     amount: float = Field(nullable=False)
     created_at: datetime = Field(default_factory=datetime.now)
-    status: TransactionStatus = Field(default="confirmed")
+    status: TransactionStatus = Field(default=TransactionStatus.PENDING)
