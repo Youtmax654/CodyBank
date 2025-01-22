@@ -87,6 +87,7 @@ def get_transactions(account_id: int, session=Depends(get_session)):
     if not transactions:
         raise HTTPException(status_code=404, detail="No transactions found")
 
+
     formatted_transactions = []
 
     for transaction in transactions:
@@ -108,3 +109,11 @@ def get_transactions(account_id: int, session=Depends(get_session)):
         formatted_transactions.append(transaction_response)
 
     return formatted_transactions
+
+
+@router.get("/transactions/{transaction_id}")
+def get_transaction(transaction_id: int, session=Depends(get_session)):
+    transaction = session.query(Transaction).filter(Transaction.id == transaction_id).first()
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    return transaction
