@@ -1,11 +1,11 @@
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
-from core.db import get_session
-from schemas.user import GetUser
-from models.User import User
+from api.core.db import get_session
+from api.schemas.user import GetUser
+from api.models.User import User
 from fastapi import HTTPException
-from core.config import algorithm, secret_key
+from api.core.config import algorithm, secret_key
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()

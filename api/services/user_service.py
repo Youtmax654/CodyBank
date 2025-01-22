@@ -1,4 +1,4 @@
-from core.config import algorithm, secret_key
+from api.core.config import algorithm, secret_key
 import jwt
 
 
