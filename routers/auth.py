@@ -1,14 +1,23 @@
 from fastapi import APIRouter, Depends, HTTPException
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.hash import pbkdf2_sha256
 
+import jwt
 from core.db import get_session
 from models.Account import Account
 from models.User import User
 from schemas.user import CreateUserBody, UserResponse
+from utils.validator.user import LoginUser
 
 
 router = APIRouter()
 
+
+secret_key = "very_secret_key"
+algorithm = "HS256"
+
+
+bearer_scheme = HTTPBearer()
 
 @router.post("/register")
 def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserResponse:
@@ -38,3 +47,20 @@ def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserRespo
         email=user.email,
         created_at=user.created_at,
     )
+
+
+
+def get_user(authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme)):
+    return jwt.decode(authorization.credentials, secret_key, algorithms=[algorithm])
+
+
+def generate_token(user_id: int):
+    return jwt.encode({"user_id": user_id}, secret_key, algorithm=algorithm)
+
+
+@router.post("/login")
+def login(body: LoginUser, session = Depends(get_session)):
+    user = session.query(User).filter_by(email=body.email).first()
+    if not user or not pbkdf2_sha256.verify(body.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    return {"token": generate_token(user.id)}
