@@ -19,7 +19,12 @@ def create_account(user_id: int, session=Depends(get_session)):
 
 @router.get("/accounts/", response_model=List[AccountResponse])
 def get_accounts(user_id: int, session=Depends(get_session)):
-    accounts = session.query(Account).filter(Account.user_id == user_id).all()
+    accounts = (
+        session.query(Account)
+        .filter(Account.user_id == user_id)
+        .order_by(Account.created_at.desc())
+        .all()
+    )
     if not accounts:
         raise HTTPException(status_code=404, detail="No accounts found for this user")
     return accounts
