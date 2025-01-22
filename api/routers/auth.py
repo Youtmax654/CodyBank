@@ -1,12 +1,12 @@
+from api.core.db import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
 
-from core.db import get_session
-from models.Account import Account
-from models.User import User
-from schemas.user import CreateUserBody, LoginUserBody, UserResponse
-from services.user_service import generate_token
-
+from api.models.Account import Account
+from api.models.User import User
+from api.schemas.user import CreateUserBody, LoginUserBody, UserResponse
+from api.services.user_service import generate_token
+from api.core.db import get_session
 
 router = APIRouter()
 

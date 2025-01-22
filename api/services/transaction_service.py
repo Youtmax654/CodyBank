@@ -1,7 +1,6 @@
 from sqlalchemy.orm import Session
-from models.Transaction import Transaction, TransactionStatus
-from models.Account import Account
-from fastapi import HTTPException
+from api.models.Transaction import Transaction, TransactionStatus
+from api.models.Account import Account
 
 
 def get_account_by_id(session: Session, account_id: int) -> Account:

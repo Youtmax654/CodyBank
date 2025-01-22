@@ -1,14 +1,12 @@
-from ast import List
 from fastapi import APIRouter, Depends, HTTPException
 
-from models.Transaction import Transaction
-from core.db import get_session
-from schemas.transactions import (
+from api.models.Transaction import Transaction
+from api.core.db import get_session
+from api.schemas.transactions import (
     Deposit,
     SendMoney,
-    TransactionResponse,
 )
-from services.transaction_service import (
+from api.services.transaction_service import (
     create_transaction,
     get_account_by_id,
     update_account_balance,

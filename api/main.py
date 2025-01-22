@@ -1,7 +1,7 @@
+from api.routers import auth, accounts, transactions, users
 from fastapi import FastAPI
 
-from core.db import create_db_and_tables
-from routers import accounts, auth, transactions, users
+from api.core.db import create_db_and_tables
 
 create_db_and_tables()
 

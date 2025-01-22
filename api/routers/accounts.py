@@ -1,9 +1,14 @@
+from api.models.Transaction import TransactionStatus
+from api.services.account_service import (
+    get_primary_by_user_id,
+    get_transactions_by_account_id,
+)
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 
-from core.db import get_session
-from models.Account import Account
-from schemas.account import AccountResponse
+from api.core.db import get_session
+from api.models.Account import Account
+from api.schemas.account import AccountDetailResponse, AccountResponse
 
 router = APIRouter()
 
@@ -30,11 +35,15 @@ def get_accounts(user_id: int, session=Depends(get_session)):
     return accounts
 
 
-@router.get("/accounts/{account_id}", response_model=AccountResponse)
+@router.get("/accounts/{account_id}", response_model=AccountDetailResponse)
 def get_account(account_id: int, session=Depends(get_session)):
     account = session.query(Account).filter(Account.id == account_id).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
+
+    if not account.status:
+        raise HTTPException(status_code=403, detail="Account is inactive")
+
     return account
 
 
@@ -43,8 +52,33 @@ def desactivate_account(account_id: int, session=Depends(get_session)):
     account = session.query(Account).filter(Account.id == account_id).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
+
+    if not account.status:
+        raise HTTPException(status_code=403, detail="Account is already inactive")
+
+    if account.is_primary:
+        raise HTTPException(
+            status_code=403, detail="Primary account cannot be deactivated"
+        )
+
+    transactions = get_transactions_by_account_id(session, account.id)
+    is_pending_transactions = False
+    for transaction in transactions:
+        if transaction.status == TransactionStatus.PENDING:
+            is_pending_transactions = True
+            break
+
+    if is_pending_transactions:
+        raise HTTPException(status_code=403, detail="Account has pending transactions")
+
     account.status = False
+
+    primary_account = get_primary_by_user_id(session, account.user_id)
+    primary_account.balance += account.balance
+    account.balance = 0
+
     session.add(account)
     session.commit()
     session.refresh(account)
+
     return account
