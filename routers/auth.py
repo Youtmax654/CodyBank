@@ -1,12 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.hash import pbkdf2_sha256
 
-import jwt
 from core.db import get_session
 from models.Account import Account
 from models.User import User
-from schemas.user import CreateUserBody, LoginUser, UserResponse
+from schemas.user import CreateUserBody, LoginUserBody, UserResponse
 from services.user_service import generate_token
 
 
@@ -52,7 +50,7 @@ def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserRespo
 
 
 @router.post("/login")
-def login(body: LoginUser, session=Depends(get_session)):
+def login(body: LoginUserBody, session=Depends(get_session)):
     user = session.query(User).filter_by(email=body.email).first()
     if not user or not pbkdf2_sha256.verify(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
