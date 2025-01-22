@@ -50,9 +50,9 @@ def get_account(account_id: int, session=Depends(get_session)):
     return account
 
 
-@router.put("/accounts/{id_account}/deactivate")
-def desactivate_account(id_account: int, session=Depends(get_session)):
-    account = session.query(Account).filter(Account.id == id_account).first()
+@router.put("/accounts/{account_id}/deactivate")
+def desactivate_account(account_id: int, session=Depends(get_session)):
+    account = session.query(Account).filter(Account.id == account_id).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
     account.status = False
