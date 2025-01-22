@@ -3,9 +3,10 @@ from sqlmodel import SQLModel, Field
 from datetime import datetime
 
 
-class TransactionType(Enum):
-    deposit = "deposit"
-    transfer = "transfer"
+class TransactionStatus(Enum):
+    CONFIRMED = "confirmed"
+    PENDING = "pending"
+    CANCELED = "CANCELED"
 
 
 class Transaction(SQLModel, table=True):
@@ -13,6 +14,5 @@ class Transaction(SQLModel, table=True):
     source_account_id: int = Field(foreign_key="account.id", nullable=True)
     destination_account_id: int = Field(foreign_key="account.id")
     amount: float = Field(nullable=False)
-    type: TransactionType = Field(nullable=False)
     created_at: datetime = Field(default_factory=datetime.now)
-    status: str = Field(default="confirmed")
+    status: TransactionStatus = Field(default="confirmed")

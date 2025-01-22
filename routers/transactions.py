@@ -1,9 +1,13 @@
 from fastapi import APIRouter, Depends, HTTPException
 
-from models.Account import Account
-from models.Transaction import Transaction, TransactionType
-from utils.db import get_session
+from models.Transaction import Transaction
+from core.db import get_session
 from schemas.transactions import Deposit, SendMoney
+from services.transaction_service import (
+    create_transaction,
+    get_account_by_id,
+    update_account_balance,
+)
 
 router = APIRouter()
 
@@ -13,21 +17,10 @@ def deposit(body: Deposit, session=Depends(get_session)):
     if body.amount < 10:
         raise HTTPException(status_code=400, detail="Amount must be greater than 10")
 
-    account = session.query(Account).filter(Account.id == body.account_id).first()
-    if not account:
-        raise HTTPException(status_code=404, detail="Account not found")
+    account = get_account_by_id(session, body.account_id)
+    update_account_balance(session, account, body.amount)
+    create_transaction(session, 0, account.id, body.amount)
 
-    account.balance += body.amount
-    transaction = Transaction(
-        source_account_id=account.id,
-        destination_account_id=account.id,
-        amount=body.amount,
-        type=TransactionType.deposit,
-        status="confirmed",
-    )
-    session.add(transaction)
-    session.commit()
-    session.refresh(transaction)
     return account.balance
 
 
@@ -36,31 +29,24 @@ def send_money(body: SendMoney, session=Depends(get_session)):
     if body.amount < 10:
         raise HTTPException(status_code=400, detail="Amount must be greater than 10")
 
-    source_account = (
-        session.query(Account).filter(Account.id == body.source_account_id).first()
-    )
+    source_account = get_account_by_id(session, body.source_account_id)
     if not source_account:
         raise HTTPException(status_code=404, detail="Source account not found")
-    destination_account = (
-        session.query(Account).filter(Account.id == body.destination_account_id).first()
-    )
+
+    destination_account = get_account_by_id(session, body.destination_account_id)
     if not destination_account:
         raise HTTPException(status_code=404, detail="Destination account not found")
 
     if source_account.balance >= body.amount:
-        source_account.balance -= body.amount
-        destination_account.balance += body.amount
-        transaction = Transaction(
-            source_account_id=source_account.id,
-            destination_account_id=destination_account.id,
-            amount=body.amount,
-            type=TransactionType.transfer,
-            status="confirmed",
+        new_balance = update_account_balance(session, source_account, -body.amount)
+        new_balance = update_account_balance(session, destination_account, body.amount)
+        create_transaction(
+            session,
+            source_account.id,
+            destination_account.id,
+            body.amount,
         )
-        session.add_all([source_account, destination_account, transaction])
-        session.commit()
-        session.refresh(source_account)
-        return source_account.balance
+        return new_balance
     else:
         raise HTTPException(status_code=400, detail="Insufficient funds")
 
