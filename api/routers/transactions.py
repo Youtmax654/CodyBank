@@ -1,8 +1,13 @@
+from ast import List
 from fastapi import APIRouter, Depends, HTTPException
 
 from models.Transaction import Transaction
 from core.db import get_session
-from schemas.transactions import Deposit, SendMoney
+from schemas.transactions import (
+    Deposit,
+    SendMoney,
+    TransactionResponse,
+)
 from services.transaction_service import (
     create_transaction,
     get_account_by_id,
@@ -19,7 +24,6 @@ def deposit(body: Deposit, session=Depends(get_session)):
 
     account = get_account_by_id(session, body.account_id)
 
-    # Vérification du statut du compte
     if not account.status:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
@@ -33,6 +37,11 @@ def deposit(body: Deposit, session=Depends(get_session)):
 def send_money(body: SendMoney, session=Depends(get_session)):
     if body.amount < 10:
         raise HTTPException(status_code=400, detail="Amount must be greater than 10")
+
+    if body.source_account_id == body.destination_account_id:
+        raise HTTPException(
+            status_code=400, detail="Source and destination accounts cannot be the same"
+        )
 
     source_account = get_account_by_id(session, body.source_account_id)
     if not source_account:
@@ -64,9 +73,7 @@ def send_money(body: SendMoney, session=Depends(get_session)):
 
 @router.get("/transactions")
 def get_transactions(account_id: int, session=Depends(get_session)):
-    # Vérifier d'abord si le compte existe et est actif
     account = get_account_by_id(session, account_id)
-
     if not account.status:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
@@ -82,4 +89,24 @@ def get_transactions(account_id: int, session=Depends(get_session)):
     if not transactions:
         raise HTTPException(status_code=404, detail="No transactions found")
 
-    return transactions
+    formatted_transactions = []
+
+    for transaction in transactions:
+        transaction_response = {
+            "id": transaction.id,
+            "amount": transaction.amount,
+            "created_at": transaction.created_at,
+            "status": transaction.status,
+        }
+
+        if transaction.source_account_id == account_id:
+            transaction_response["destination_account_id"] = (
+                transaction.destination_account_id
+            )
+
+        if transaction.destination_account_id == account_id:
+            transaction_response["source_account_id"] = transaction.source_account_id
+
+        formatted_transactions.append(transaction_response)
+
+    return formatted_transactions
