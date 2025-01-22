@@ -18,6 +18,11 @@ def deposit(body: Deposit, session=Depends(get_session)):
         raise HTTPException(status_code=400, detail="Amount must be greater than 10")
 
     account = get_account_by_id(session, body.account_id)
+    
+    # Vérification du statut du compte
+    if not account.status:
+        raise HTTPException(status_code=403, detail="Account is inactive")
+
     update_account_balance(session, account, body.amount)
     create_transaction(session, 0, account.id, body.amount)
 
@@ -37,6 +42,13 @@ def send_money(body: SendMoney, session=Depends(get_session)):
     if not destination_account:
         raise HTTPException(status_code=404, detail="Destination account not found")
 
+    # Vérification du statut des comptes
+    if not source_account.status:
+        raise HTTPException(status_code=403, detail="Source account is inactive")
+    
+    if not destination_account.status:
+        raise HTTPException(status_code=403, detail="Destination account is inactive")
+
     if source_account.balance >= body.amount:
         new_balance = update_account_balance(session, source_account, -body.amount)
         new_balance = update_account_balance(session, destination_account, body.amount)
@@ -53,6 +65,12 @@ def send_money(body: SendMoney, session=Depends(get_session)):
 
 @router.get("/transactions")
 def get_transactions(account_id: int, session=Depends(get_session)):
+    # Vérifier d'abord si le compte existe et est actif
+    account = get_account_by_id(session, account_id)
+    
+    if not account.status:
+        raise HTTPException(status_code=403, detail="Account is inactive")
+
     transactions = (
         session.query(Transaction)
         .filter(
