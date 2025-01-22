@@ -22,3 +22,8 @@ class GetUser(BaseModel):
     last_name: str
     email: str
     created_at: datetime
+
+
+class LoginUserBody(BaseModel):
+    email: str
+    password: str
