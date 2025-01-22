@@ -17,6 +17,8 @@ class UserResponse(BaseModel):
     created_at: datetime
 
 
-class LoginUser(BaseModel):
+class GetUser(BaseModel):
+    first_name: str
+    last_name: str
     email: str
-    password: str
+    created_at: datetime
