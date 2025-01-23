@@ -12,7 +12,6 @@ from api.schemas.beneficiary import (
 from api.services.transaction_service import (
     get_account_by_id,
 )
-from api.services.beneficiary_service import create_beneficiary
 
 
 router = APIRouter()

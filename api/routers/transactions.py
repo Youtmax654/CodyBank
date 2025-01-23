@@ -14,7 +14,6 @@ from api.services.transaction_service import (
     get_account_by_id,
     update_account_balance,
 )
-from api.services.beneficiary_service import create_beneficiary
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()
