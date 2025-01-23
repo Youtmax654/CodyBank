@@ -16,8 +16,10 @@ def get_current_user(
     session=Depends(get_session),
     authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    body = jwt.decode(authorization.credentials, secret_key, algorithms=[algorithm])
-    user = session.query(User).filter(User.id == body["user_id"]).first()
+    decoded_token = jwt.decode(
+        authorization.credentials, secret_key, algorithms=[algorithm]
+    )
+    user = session.query(User).filter(User.id == decoded_token["user_id"]).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return GetUser(

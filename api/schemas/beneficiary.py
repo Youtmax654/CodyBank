@@ -1,15 +1,16 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class CreateBeneficiary(BaseModel):
+
+class BeneficiaryBody(BaseModel):
+    user_id: int
     account_id: int
-    beneficiary_account_id: int
     name: str
-    created_at: datetime
+
 
 class BeneficiaryResponse(BaseModel):
     id: int
     name: str
+    user_id: int
     account_id: int
-    beneficiary_account_id: int
     created_at: datetime
