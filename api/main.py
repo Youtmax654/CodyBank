@@ -1,5 +1,5 @@
+from api.routers import auth, accounts, beneficiaries, transactions, users
 from api.models.Transaction import Transaction, TransactionStatus
-from api.routers import auth, accounts, transactions, users
 from fastapi_utilities import repeat_every
 from fastapi import FastAPI, Depends
 
@@ -56,3 +56,4 @@ app.include_router(auth.router)
 app.include_router(transactions.router)
 app.include_router(accounts.router)
 app.include_router(users.router)
+app.include_router(beneficiaries.router)
