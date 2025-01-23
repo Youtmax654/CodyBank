@@ -1,16 +1,17 @@
+from uuid import UUID
 from pydantic import BaseModel
 from datetime import datetime
 
 
 class BeneficiaryBody(BaseModel):
-    user_id: int
-    account_id: int
+    user_id: UUID
+    account_id: UUID
     name: str
 
 
 class BeneficiaryResponse(BaseModel):
-    id: int
+    id: UUID
     name: str
-    user_id: int
-    account_id: int
+    user_id: UUID
+    account_id: UUID
     created_at: datetime

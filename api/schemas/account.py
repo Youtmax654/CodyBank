@@ -1,19 +1,20 @@
+from uuid import UUID
 from pydantic import BaseModel
 from datetime import datetime
 
 
 class AccountCreateBody(BaseModel):
-    user_id: int
+    user_id: UUID
 
 
 class AccountResponse(BaseModel):
-    id: int
+    id: UUID
     balance: float
 
 
 class AccountDetailResponse(BaseModel):
-    id: int
-    user_id: int
+    id: UUID
+    user_id: UUID
     balance: float
     is_primary: bool
     created_at: datetime

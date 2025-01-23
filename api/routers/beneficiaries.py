@@ -1,3 +1,4 @@
+from uuid import UUID
 from api.models.Account import Account
 from api.models.Beneficiary import Beneficiary
 from fastapi import APIRouter, Depends, HTTPException
@@ -79,7 +80,7 @@ def get_beneficiaries(
     decoded_token = jwt.decode(
         authorization.credentials, secret_key, algorithms=[algorithm]
     )
-    user_id = decoded_token["user_id"]
+    user_id = UUID(decoded_token["user_id"])
 
     beneficiaries = (
         session.query(Beneficiary).filter(Beneficiary.user_id == user_id).all()

@@ -1,9 +1,10 @@
+from uuid import UUID
 from api.models.Account import Account
 from api.models.Transaction import Transaction
 from sqlalchemy.orm import Session
 
 
-def get_primary_by_user_id(session: Session, user_id: int):
+def get_primary_by_user_id(session: Session, user_id: UUID):
     account = session.query(Account).filter(Account.user_id == user_id).first()
 
     if account.is_primary:
@@ -18,7 +19,7 @@ def get_primary_by_user_id(session: Session, user_id: int):
     return primary_account
 
 
-def get_transactions_by_account_id(session: Session, account_id: int):
+def get_transactions_by_account_id(session: Session, account_id: UUID):
     return (
         session.query(Transaction)
         .filter(Transaction.source_account_id == account_id)
@@ -26,13 +27,12 @@ def get_transactions_by_account_id(session: Session, account_id: int):
     )
 
 
-def get_accounts_by_transaction_id(session: Session, transaction_id: int):
+def get_accounts_by_transaction_id(
+    session: Session, transaction_id: UUID
+) -> tuple[Account, Account]:
     transaction = (
         session.query(Transaction).filter(Transaction.id == transaction_id).first()
     )
-
-    if not transaction:
-        return None, None
 
     source_account = (
         session.query(Account)
@@ -46,4 +46,4 @@ def get_accounts_by_transaction_id(session: Session, transaction_id: int):
         .first()
     )
 
-    return source_account, destination_account
+    return (source_account, destination_account)

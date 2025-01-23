@@ -1,4 +1,4 @@
-import uuid
+from uuid import UUID
 from fastapi import APIRouter, Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
@@ -20,10 +20,12 @@ def get_current_user(
     decoded_token = jwt.decode(
         authorization.credentials, secret_key, algorithms=[algorithm]
     )
-    user = session.query(User).filter(User.id == decoded_token["user_id"]).first()
+    user_id = decoded_token["user_id"]
+
+    user = session.query(User).filter(User.id == UUID(user_id)).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-        
+
     return UserResponse(
         id=user.id,
         first_name=user.first_name,

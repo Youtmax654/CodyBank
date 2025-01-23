@@ -1,11 +1,11 @@
 from api.routers import auth, accounts, beneficiaries, transactions, users
 from api.models.Transaction import Transaction, TransactionStatus
 from fastapi_utilities import repeat_every
-from fastapi import FastAPI, Depends
+from fastapi import FastAPI
 
 from api.core.db import create_db_and_tables, get_session
+from api.core.config import pending_transactions_interval
 from api.services.transaction_service import (
-    apply_pending_transactions,
     get_account_by_id,
 )
 from datetime import datetime, timedelta
@@ -16,7 +16,7 @@ app = FastAPI()
 
 
 @app.on_event("startup")
-@repeat_every(seconds=5)
+@repeat_every(seconds=10)
 def apply_pending_transactions():
     # print("Applying pending transactions...")
     session = next(get_session())
@@ -31,7 +31,7 @@ def apply_pending_transactions():
     for transaction in transactions:
         passed_time = datetime.now() - transaction.created_at
 
-        if passed_time < timedelta(seconds=5):
+        if passed_time < timedelta(seconds=pending_transactions_interval):
             continue
 
         transaction.status = TransactionStatus.CONFIRMED

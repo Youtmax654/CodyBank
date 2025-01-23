@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 from pydantic import BaseModel
 
 
@@ -10,7 +11,7 @@ class CreateUserBody(BaseModel):
 
 
 class UserResponse(BaseModel):
-    id: int
+    id: UUID
     first_name: str
     last_name: str
     email: str

@@ -1,3 +1,4 @@
+from uuid import UUID
 from api.models.Transaction import TransactionStatus
 from api.services.account_service import (
     get_primary_by_user_id,
@@ -27,7 +28,7 @@ def create_account(body: AccountCreateBody, session=Depends(get_session)):
 
 
 @router.get("/accounts/", response_model=List[AccountResponse])
-def get_accounts(user_id: int, session=Depends(get_session)):
+def get_accounts(user_id: UUID, session=Depends(get_session)):
     accounts = (
         session.query(Account)
         .filter(Account.user_id == user_id)
@@ -40,7 +41,7 @@ def get_accounts(user_id: int, session=Depends(get_session)):
 
 
 @router.get("/accounts/{account_id}", response_model=AccountDetailResponse)
-def get_account(account_id: int, session=Depends(get_session)):
+def get_account(account_id: UUID, session=Depends(get_session)):
     account = session.query(Account).filter(Account.id == account_id).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
@@ -52,7 +53,7 @@ def get_account(account_id: int, session=Depends(get_session)):
 
 
 @router.put("/accounts/{account_id}/deactivate")
-def desactivate_account(account_id: int, session=Depends(get_session)):
+def desactivate_account(account_id: UUID, session=Depends(get_session)):
     account = session.query(Account).filter(Account.id == account_id).first()
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")

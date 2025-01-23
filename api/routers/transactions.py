@@ -1,7 +1,8 @@
 from datetime import datetime, timedelta
+from uuid import UUID
 from api.services.account_service import get_accounts_by_transaction_id
 from fastapi import APIRouter, Depends, HTTPException
-from api.core.config import algorithm, secret_key
+from api.core.config import algorithm, secret_key, pending_transactions_interval
 import jwt
 from api.models.Transaction import Transaction, TransactionStatus, TransactionType
 from api.core.db import get_session
@@ -83,7 +84,7 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
 
 
 @router.get("/transactions")
-def get_transactions(account_id: int, session=Depends(get_session)):
+def get_transactions(account_id: UUID, session=Depends(get_session)):
     account = get_account_by_id(session, account_id)
     if not account.status:
         raise HTTPException(status_code=403, detail="Account is inactive")
@@ -123,12 +124,12 @@ def get_transactions(account_id: int, session=Depends(get_session)):
 
 @router.get("/transactions/{transaction_id}")
 def get_transaction(
-    transaction_id: int,
+    transaction_id: UUID,
     session=Depends(get_session),
     authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     body = jwt.decode(authorization.credentials, secret_key, algorithms=[algorithm])
-    user_id = body["user_id"]
+    user_id = UUID(body["user_id"])
 
     transaction = (
         session.query(Transaction).filter(Transaction.id == transaction_id).first()
@@ -136,8 +137,14 @@ def get_transaction(
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
 
-    accounts = get_accounts_by_transaction_id(session, transaction_id)
-    if accounts[0].user_id != user_id and accounts[1].user_id != user_id:
+    source_account, destination_account = get_accounts_by_transaction_id(
+        session, transaction_id
+    )
+
+    if not source_account or not destination_account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if source_account.user_id != user_id and destination_account.user_id != user_id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
     return transaction
@@ -145,12 +152,12 @@ def get_transaction(
 
 @router.put("/transactions/{transaction_id}/cancel")
 def cancel_transaction(
-    transaction_id: int,
+    transaction_id: UUID,
     session=Depends(get_session),
     authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
     body = jwt.decode(authorization.credentials, secret_key, algorithms=[algorithm])
-    user_id = body["user_id"]
+    user_id = UUID(body["user_id"])
 
     transaction = (
         session.query(Transaction).filter(Transaction.id == transaction_id).first()
@@ -164,7 +171,9 @@ def cancel_transaction(
     if source_account.user_id != user_id and destination_account.user_id != user_id:
         raise HTTPException(status_code=403, detail="Unauthorized")
 
-    if datetime.now() - transaction.created_at > timedelta(seconds=5):
+    if datetime.now() - transaction.created_at > timedelta(
+        seconds=pending_transactions_interval
+    ):
         raise HTTPException(status_code=403, detail="Transaction too old")
 
     if transaction.status == TransactionStatus.CONFIRMED:

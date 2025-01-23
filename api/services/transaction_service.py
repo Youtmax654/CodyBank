@@ -1,10 +1,12 @@
 from datetime import datetime, timedelta
+from uuid import UUID
 from sqlalchemy.orm import Session
 from api.models.Transaction import Transaction, TransactionStatus, TransactionType
 from api.models.Account import Account
+from api.core.config import pending_transactions_interval
 
 
-def get_account_by_id(session: Session, account_id: int) -> Account:
+def get_account_by_id(session: Session, account_id: UUID) -> Account:
     account = session.query(Account).filter(Account.id == account_id).first()
     return account
 
@@ -19,8 +21,8 @@ def update_account_balance(session: Session, account: Account, amount: float):
 
 def create_transaction(
     session: Session,
-    source_account_id: int | None,
-    destination_account_id: int,
+    source_account_id: UUID | None,
+    destination_account_id: UUID,
     amount: float,
     type: TransactionType = TransactionType.TRANSFER,
     status: TransactionStatus = TransactionStatus.PENDING,
@@ -49,7 +51,7 @@ def apply_pending_transactions(session: Session):
     for transaction in transactions:
         passed_time = datetime.now() - transaction.created_at
 
-        if passed_time > timedelta(seconds=5):
+        if passed_time > timedelta(seconds=pending_transactions_interval):
             transaction.status = TransactionStatus.CONFIRMED
 
     session.add_all(transactions)
