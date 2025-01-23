@@ -2,6 +2,10 @@ from pydantic import BaseModel
 from datetime import datetime
 
 
+class AccountCreateBody(BaseModel):
+    user_id: int
+
+
 class AccountResponse(BaseModel):
     id: int
     balance: float

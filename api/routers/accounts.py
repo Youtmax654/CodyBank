@@ -8,14 +8,18 @@ from typing import List
 
 from api.core.db import get_session
 from api.models.Account import Account
-from api.schemas.account import AccountDetailResponse, AccountResponse
+from api.schemas.account import (
+    AccountCreateBody,
+    AccountDetailResponse,
+    AccountResponse,
+)
 
 router = APIRouter()
 
 
 @router.post("/accounts/", response_model=AccountResponse)
-def create_account(user_id: int, session=Depends(get_session)):
-    account = Account(user_id=user_id, balance=0.00)
+def create_account(body: AccountCreateBody, session=Depends(get_session)):
+    account = Account(user_id=body.user_id, balance=0.00)
     session.add(account)
     session.commit()
     session.refresh(account)

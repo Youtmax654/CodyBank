@@ -8,7 +8,7 @@ class SendMoney(BaseModel):
     amount: float
 
 
-class Deposit(BaseModel):
+class DepositBody(BaseModel):
     account_id: int
     amount: float
 
