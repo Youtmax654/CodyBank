@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
-from api.models.Transaction import Transaction, TransactionStatus
+from api.models.Transaction import Transaction, TransactionStatus, TransactionType
 from api.models.Account import Account
 
 
@@ -22,6 +22,7 @@ def create_transaction(
     source_account_id: int | None,
     destination_account_id: int,
     amount: float,
+    type: TransactionType = TransactionType.TRANSFER,
     status: TransactionStatus = TransactionStatus.PENDING,
 ):
 
@@ -29,6 +30,7 @@ def create_transaction(
         source_account_id=source_account_id,
         destination_account_id=destination_account_id,
         amount=amount,
+        type=type,
         status=status,
     )
     session.add(transaction)

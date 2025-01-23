@@ -1,4 +1,5 @@
 from datetime import datetime
+from api.models.Transaction import TransactionStatus, TransactionType
 from pydantic import BaseModel
 
 
@@ -19,4 +20,5 @@ class TransactionResponse(BaseModel):
     created_at: datetime
     source_account_id: int | None
     destination_account_id: int | None
-    status: str
+    type: TransactionType
+    status: TransactionStatus

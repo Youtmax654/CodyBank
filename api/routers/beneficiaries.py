@@ -25,6 +25,9 @@ def create_beneficiary(
 ):
     account = get_account_by_id(session, body.account_id)
 
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
     if not account.status:
         raise HTTPException(status_code=403, detail="Account is inactive")
 

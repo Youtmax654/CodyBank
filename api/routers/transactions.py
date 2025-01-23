@@ -3,7 +3,7 @@ from api.services.account_service import get_accounts_by_transaction_id
 from fastapi import APIRouter, Depends, HTTPException
 from api.core.config import algorithm, secret_key
 import jwt
-from api.models.Transaction import Transaction, TransactionStatus
+from api.models.Transaction import Transaction, TransactionStatus, TransactionType
 from api.core.db import get_session
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from api.schemas.transactions import (
@@ -33,7 +33,12 @@ def deposit(body: DepositBody, session=Depends(get_session)) -> TransactionRespo
 
     update_account_balance(session, account, body.amount)
     transaction = create_transaction(
-        session, None, account.id, body.amount, TransactionStatus.CONFIRMED
+        session,
+        None,
+        account.id,
+        body.amount,
+        TransactionType.DEPOSIT,
+        TransactionStatus.CONFIRMED,
     )
 
     return transaction
