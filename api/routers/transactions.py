@@ -29,6 +29,9 @@ def deposit(body: DepositBody, session=Depends(get_session)) -> TransactionRespo
 
     account = get_account_by_id(session, body.account_id)
 
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
     if not account.is_active:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
@@ -109,6 +112,7 @@ def get_transactions(account_id: UUID, session=Depends(get_session)):
             "amount": transaction.amount,
             "created_at": transaction.created_at,
             "type": transaction.type,
+            "status": transaction.status,
         }
 
         if transaction.source_account_id == account_id:
