@@ -29,7 +29,7 @@ def deposit(body: DepositBody, session=Depends(get_session)) -> TransactionRespo
 
     account = get_account_by_id(session, body.account_id)
 
-    if not account.status:
+    if not account.is_active:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
     update_account_balance(session, account, body.amount)
@@ -63,10 +63,10 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
     if not destination_account:
         raise HTTPException(status_code=404, detail="Destination account not found")
 
-    if not source_account.status:
+    if not source_account.is_active:
         raise HTTPException(status_code=403, detail="Source account is inactive")
 
-    if not destination_account.status:
+    if not destination_account.is_active:
         raise HTTPException(status_code=403, detail="Destination account is inactive")
 
     if source_account.balance < body.amount:
@@ -86,7 +86,7 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
 @router.get("/transactions")
 def get_transactions(account_id: UUID, session=Depends(get_session)):
     account = get_account_by_id(session, account_id)
-    if not account.status:
+    if not account.is_active:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
     transactions = (
@@ -108,6 +108,7 @@ def get_transactions(account_id: UUID, session=Depends(get_session)):
             "id": transaction.id,
             "amount": transaction.amount,
             "created_at": transaction.created_at,
+            "type": transaction.type,
         }
 
         if transaction.source_account_id == account_id:

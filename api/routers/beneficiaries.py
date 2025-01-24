@@ -29,7 +29,7 @@ def create_beneficiary(
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    if not account.status:
+    if not account.is_active:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
     beneficiary_account = (

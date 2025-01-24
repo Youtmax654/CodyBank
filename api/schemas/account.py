@@ -18,4 +18,11 @@ class AccountDetailResponse(BaseModel):
     balance: float
     is_primary: bool
     created_at: datetime
-    status: bool
+    is_active: bool
+
+
+class Account(BaseModel):
+    id: UUID
+    first_name: str
+    last_name: str
+    email: str

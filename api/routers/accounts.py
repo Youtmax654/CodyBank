@@ -46,7 +46,7 @@ def get_account(account_id: UUID, session=Depends(get_session)):
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    if not account.status:
+    if not account.is_active:
         raise HTTPException(status_code=403, detail="Account is inactive")
 
     return account
@@ -58,7 +58,7 @@ def desactivate_account(account_id: UUID, session=Depends(get_session)):
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    if not account.status:
+    if not account.is_active:
         raise HTTPException(status_code=403, detail="Account is already inactive")
 
     if account.is_primary:
@@ -76,7 +76,7 @@ def desactivate_account(account_id: UUID, session=Depends(get_session)):
     if is_pending_transactions:
         raise HTTPException(status_code=403, detail="Account has pending transactions")
 
-    account.status = False
+    account.is_active = False
 
     primary_account = get_primary_by_user_id(session, account.user_id)
     primary_account.balance += account.balance
