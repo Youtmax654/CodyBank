@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from uuid import UUID
+from typing import Optional
 from sqlalchemy.orm import Session
 from api.models.Transaction import Transaction, TransactionStatus, TransactionType
 from api.models.Account import Account
@@ -21,9 +22,9 @@ def update_account_balance(session: Session, account: Account, amount: float):
 
 def create_transaction(
     session: Session,
-    source_account_id: UUID | None,
     destination_account_id: UUID,
     amount: float,
+    source_account_id: Optional[UUID] = None,
     type: TransactionType = TransactionType.TRANSFER,
     status: TransactionStatus = TransactionStatus.PENDING,
 ):
