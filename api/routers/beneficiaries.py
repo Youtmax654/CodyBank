@@ -9,6 +9,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from api.schemas.beneficiary import (
     BeneficiaryBody,
     BeneficiaryResponse,
+    BeneficiaryUpdateBody,
 )
 from api.services.transaction_service import (
     get_account_by_id,
@@ -96,3 +97,43 @@ def get_beneficiaries(
         )
         for beneficiary in beneficiaries
     ]
+
+
+@router.patch("/beneficiaries/{beneficiary_id}")
+def update_beneficiary(
+    body: BeneficiaryUpdateBody, beneficiary_id: UUID, session=Depends(get_session)
+):
+    beneficiary = (
+        session.query(Beneficiary).filter(Beneficiary.id == beneficiary_id).first()
+    )
+    if not beneficiary:
+        raise HTTPException(status_code=404, detail="Beneficiary not found")
+
+    if not body.name:
+        body.name = beneficiary.name
+
+    if not body.account_id:
+        body.account_id = beneficiary.account_id
+
+    beneficiary.name = body.name
+    beneficiary.account_id = body.account_id
+
+    session.add(beneficiary)
+    session.commit()
+    session.refresh(beneficiary)
+
+    return beneficiary
+
+
+@router.delete("/beneficiaries/{beneficiary_id}")
+def delete_beneficiary(beneficiary_id: UUID, session=Depends(get_session)):
+    beneficiary = (
+        session.query(Beneficiary).filter(Beneficiary.id == beneficiary_id).first()
+    )
+    if not beneficiary:
+        raise HTTPException(status_code=404, detail="Beneficiary not found")
+
+    session.delete(beneficiary)
+    session.commit()
+
+    return {"message": "Beneficiary deleted successfully"}
