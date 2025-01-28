@@ -1,9 +1,9 @@
 {
   "scripts": {
     "init": "npm run init:api && npm run init:app",
-    "init:api": "cd api && python -m venv venv || venv\\Scripts\\activate && pip install -r requirements.txt",
+    "init:api": "cd api && python -m venv venv && venv\\Scripts\\activate && pip install -r requirements.txt",
     "init:mac": "npm run init:api:mac && npm run init:app",
-    "init:api:mac": "cd api && python3 -m venv venv || venv\\Scripts\\activate && pip3 install -r requirements.txt",
+    "init:api:mac": "cd api && python -m venv venv && source venv/bin/activate && pip install -r requirements.txt",
     "init:app": "cd app && npm install",
     "api": "cd api && source venv/bin/activate || venv\\Scripts\\activate && fastapi dev main.py",
     "app": "cd app && npm run dev"
