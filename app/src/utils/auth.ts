@@ -1,21 +1,15 @@
+import axios from "axios";
+import Cookies from "js-cookie";
+import { jwtDecode } from "jwt-decode";
+
 type LoginUserBody = {
   email: string;
   password: string;
 };
 export async function login(body: LoginUserBody) {
-  const res = await fetch("/api/login", {
-    body: JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-  });
+  const res = await axios.post("/api/login", body);
 
-  if (!res.ok) {
-    throw new Error("Failed to login");
-  }
-
-  return res.json();
+  return res.data;
 }
 
 type RegisterUserBody = {
@@ -25,17 +19,17 @@ type RegisterUserBody = {
   password: string;
 };
 export async function register(body: RegisterUserBody) {
-  const res = await fetch("/api/register", {
-    body: JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json",
-    },
-    method: "POST",
-  });
+  const res = await axios.post("/api/register", body);
 
-  if (!res.ok) {
-    throw new Error("Failed to register user");
-  }
+  return res.data;
+}
 
-  return res.json();
+type UserToken = {
+  user_id?: string;
+};
+export function isAuthenticated() {
+  const token = Cookies.get("token");
+  if (!token) return false;
+  const decoded = jwtDecode<UserToken>(token);
+  return !!decoded.user_id;
 }

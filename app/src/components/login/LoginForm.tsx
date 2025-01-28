@@ -21,7 +21,14 @@ export default function LoginForm() {
           navigate({ to: "/dashboard" });
           return "Connexion réussie !";
         },
-        error: "Erreur lors de la connexion",
+        error: (err) => {
+          switch (err.status) {
+            case 401:
+              return "Votre email ou mot de passe est incorrect";
+            default:
+              return "Une erreur est survenue, veuillez réessayer plus tard";
+          }
+        },
       });
     },
   });
@@ -29,10 +36,10 @@ export default function LoginForm() {
   return (
     <form
       onSubmit={formik.handleSubmit}
-      className="flex flex-col justify-center items-center gap-4 bg-white rounded-md w-1/2 h-full"
+      className="flex flex-col items-start mx-auto gap-4 w-1/2"
     >
       <TextField
-        className="w-1/2"
+        fullWidth
         id="email"
         name="email"
         label="Email"
@@ -44,7 +51,7 @@ export default function LoginForm() {
         required
       />
       <TextField
-        className="w-1/2"
+        fullWidth
         id="password"
         name="password"
         label="Mot de passe"

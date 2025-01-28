@@ -18,7 +18,14 @@ export default function RegisterForm() {
       await toast.promise(register(values), {
         loading: "Enregistrement en cours...",
         success: "Enregistrement réussi !",
-        error: "Erreur lors de l'enregistrement",
+        error: (err) => {
+          switch (err.status) {
+            case 409:
+              return "Cette adresse email est déjà utilisée";
+            default:
+              return "Une erreur est survenue, veuillez réessayer plus tard";
+          }
+        },
       });
     },
   });
@@ -26,10 +33,11 @@ export default function RegisterForm() {
   return (
     <form
       onSubmit={formik.handleSubmit}
-      className="flex flex-col justify-center items-center gap-4 bg-white rounded-md w-1/2 h-full"
+      className="flex flex-col items-start mx-auto gap-4 w-1/2"
     >
-      <div className="flex flex-row w-1/2 gap-4">
+      <div className="flex flex-row gap-4 w-full">
         <TextField
+          fullWidth
           id="first_name"
           name="first_name"
           label="Prénom"
@@ -41,6 +49,7 @@ export default function RegisterForm() {
           required
         />
         <TextField
+          fullWidth
           id="last_name"
           name="last_name"
           label="Nom"
@@ -53,7 +62,7 @@ export default function RegisterForm() {
         />
       </div>
       <TextField
-        className="w-1/2"
+        fullWidth
         id="email"
         name="email"
         label="Email"
@@ -65,7 +74,7 @@ export default function RegisterForm() {
         required
       />
       <TextField
-        className="w-1/2"
+        fullWidth
         id="password"
         name="password"
         label="Mot de passe"
@@ -78,7 +87,7 @@ export default function RegisterForm() {
         required
       />
       <TextField
-        className="w-1/2"
+        fullWidth
         id="confirm_password"
         name="confirm_password"
         label="Confirmer le mot de passe"
