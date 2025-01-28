@@ -1,5 +1,6 @@
+from fastapi.responses import JSONResponse
 from api.core.db import get_session
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from passlib.hash import pbkdf2_sha256
 
 from api.models.Account import Account
@@ -54,4 +55,8 @@ def login(body: LoginUserBody, session=Depends(get_session)):
     user = session.query(User).filter_by(email=body.email).first()
     if not user or not pbkdf2_sha256.verify(body.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    return {"token": generate_token(str(user.id))}
+
+    content = {"token": generate_token(str(user.id))}
+    response = JSONResponse(content=content)
+    response.set_cookie(key="token", value=content["token"])
+    return response
