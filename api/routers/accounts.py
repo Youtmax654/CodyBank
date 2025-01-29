@@ -1,4 +1,7 @@
 from uuid import UUID
+
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+import jwt
 from api.models.Transaction import TransactionStatus
 from api.services.account_service import (
     get_primary_by_user_id,
@@ -6,7 +9,7 @@ from api.services.account_service import (
 )
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-
+from api.core.config import algorithm, secret_key
 from api.core.db import get_session
 from api.models.Account import Account
 from api.schemas.account import (
@@ -16,23 +19,40 @@ from api.schemas.account import (
 )
 
 router = APIRouter()
+bearer_scheme = HTTPBearer()
 
 
-@router.post("/accounts/", response_model=AccountResponse)
-def create_account(body: AccountCreateBody, session=Depends(get_session)):
-    account = Account(user_id=body.user_id, balance=0.00)
+@router.post("/accounts", response_model=AccountResponse)
+def create_account(
+    body: AccountCreateBody,
+    session=Depends(get_session),
+    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    decoded_token = jwt.decode(
+        authorization.credentials, secret_key, algorithms=[algorithm]
+    )
+    user_id = UUID(decoded_token["user_id"])
+
+    account = Account(user_id=user_id, name=body.name, balance=0.00, type=body.type)
     session.add(account)
     session.commit()
     session.refresh(account)
     return account
 
 
-@router.get("/accounts/", response_model=List[AccountResponse])
-def get_accounts(user_id: UUID, session=Depends(get_session)):
+@router.get("/accounts", response_model=List[AccountResponse])
+def get_accounts(
+    session=Depends(get_session),
+    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    decoded_token = jwt.decode(
+        authorization.credentials, secret_key, algorithms=[algorithm]
+    )
+    user_id = decoded_token["user_id"]
+
     accounts = (
-        session.query(Account)
-        .filter(Account.user_id == user_id)
-        .order_by(Account.created_at.desc())
+        session.query(Account).filter(Account.user_id == UUID(user_id))
+        # .order_by(Account.created_at.desc())
         .all()
     )
     if not accounts:

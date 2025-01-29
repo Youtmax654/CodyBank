@@ -1,7 +1,11 @@
-import { chartOptions, financialData, months } from "@/utils/chartConfig";
+import { chartOptions, FinancialData, months } from "@/utils/chartConfig";
 import { Line } from "react-chartjs-2";
 
-export default function ExpensesChart() {
+export default function ExpensesChart({
+  financialData,
+}: {
+  financialData: FinancialData[];
+}) {
   const expensesData = {
     labels: months,
     datasets: [

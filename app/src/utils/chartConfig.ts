@@ -1,3 +1,19 @@
+type Transaction = {
+  id: string;
+  amount: number;
+  created_at: Date;
+  type: string;
+  status: string;
+  source_account_id: string | null;
+  destination_account_id: string | null;
+};
+
+export type FinancialData = {
+  revenue: number;
+  expenses: number;
+  balance: number;
+};
+
 export const months = [
   "Jan",
   "Fév",
@@ -25,12 +41,44 @@ export const chartOptions = {
   },
 };
 
-const generateFinancialData = () => {
-  return Array.from({ length: 12 }, () => ({
-    revenue: Math.floor(Math.random() * 9000 + 1000),
-    expenses: Math.floor(Math.random() * 8000 + 500),
-    balance: Math.floor(Math.random() * 10000 + 2000),
-  }));
-};
+export const convertTransactionsToFinancialData = (
+  transactions: Transaction[]
+) => {
+  const monthSet = new Set<number>();
 
-export const financialData = generateFinancialData();
+  transactions.forEach((transaction) => {
+    const month = new Date(transaction.created_at).getMonth();
+    monthSet.add(month);
+  });
+
+  const financialData: {
+    revenue: number;
+    expenses: number;
+    balance: number;
+  }[] = Array.from({ length: monthSet.size }, () => ({
+    revenue: 0,
+    expenses: 0,
+    balance: 0,
+  }));
+
+  transactions.forEach((transaction) => {
+    const month = new Date(transaction.created_at).getMonth();
+    if (month < financialData.length) {
+      // Check if month index is valid
+      switch (transaction.type) {
+        case "DEPOSIT":
+          financialData[month].revenue += transaction.amount;
+          financialData[month].balance += transaction.amount;
+          console.log("deposit", month, financialData[month]);
+          break;
+        case "TRANSFER":
+          financialData[month].expenses += transaction.amount;
+          financialData[month].balance -= transaction.amount;
+          console.log("withdrawal", month, financialData[month]);
+          break;
+      }
+    }
+  });
+
+  return financialData;
+};

@@ -1,7 +1,11 @@
-import { chartOptions, financialData, months } from "@/utils/chartConfig";
+import { chartOptions, FinancialData, months } from "@/utils/chartConfig";
 import { Line } from "react-chartjs-2";
 
-export default function RevenueChart() {
+export default function RevenueChart({
+  financialData,
+}: {
+  financialData: FinancialData[];
+}) {
   const revenueData = {
     labels: months,
     datasets: [

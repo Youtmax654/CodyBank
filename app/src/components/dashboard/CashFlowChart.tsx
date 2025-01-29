@@ -1,7 +1,11 @@
-import { chartOptions, financialData, months } from "@/utils/chartConfig";
+import { chartOptions, FinancialData, months } from "@/utils/chartConfig";
 import { Bar } from "react-chartjs-2";
 
-export default function CashFlowChart() {
+export default function CashFlowChart({
+  financialData,
+}: {
+  financialData: FinancialData[];
+}) {
   const cashFlowData = {
     labels: months,
     datasets: [
@@ -32,7 +36,7 @@ export default function CashFlowChart() {
       <h2 className="text-lg font-semibold mb-4">Flux de trésorerie annuel</h2>
       <div className="h-64">
         <Bar
-          // @ts-ignore
+          // @ts-expect-error: type mismatch
           data={cashFlowData}
           options={{
             ...chartOptions,

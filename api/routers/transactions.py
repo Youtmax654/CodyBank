@@ -38,9 +38,9 @@ def deposit(body: DepositBody, session=Depends(get_session)) -> TransactionRespo
     update_account_balance(session, account, body.amount)
     transaction = create_transaction(
         session,
-        None,
         account.id,
         body.amount,
+        None,
         TransactionType.DEPOSIT,
         TransactionStatus.CONFIRMED,
     )
@@ -78,9 +78,9 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
     update_account_balance(session, source_account, -body.amount)
     transaction = create_transaction(
         session,
-        source_account.id,
         destination_account.id,
         body.amount,
+        source_account.id,
     )
 
     return transaction

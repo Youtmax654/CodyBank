@@ -2,6 +2,12 @@ import BalanceChart from "@/components/dashboard/BalanceChart";
 import CashFlowChart from "@/components/dashboard/CashFlowChart";
 import ExpensesChart from "@/components/dashboard/ExpensesChart";
 import RevenueChart from "@/components/dashboard/RevenueChart";
+import { Account, getAccounts } from "@/utils/accounts";
+import {
+  convertTransactionsToFinancialData,
+  FinancialData,
+} from "@/utils/chartConfig";
+import { getTransactionsByAccountId } from "@/utils/transactions";
 import { MenuItem, Select, SelectChangeEvent } from "@mui/material";
 import { createFileRoute } from "@tanstack/react-router";
 import {
@@ -15,7 +21,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 ChartJS.register(
   CategoryScale,
@@ -33,25 +39,47 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 });
 
 function RouteComponent() {
-  const [accountId, setAccountId] = useState(1);
+  const [accounts, setAccounts] = useState<Account[]>([]);
+  const [accountId, setAccountId] = useState("");
+  const [financialData, setFinancialData] = useState<FinancialData[]>([]);
 
-  const handleChange = (event: SelectChangeEvent<number>) => {
-    setAccountId(event.target.value as number);
+  useEffect(() => {
+    getAccounts().then((accounts) => {
+      if (accounts.length > 0) {
+        setAccounts(accounts);
+        setAccountId(accounts[0].id);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (accountId) {
+      getTransactionsByAccountId(accountId).then((transactions) => {
+        setFinancialData(convertTransactionsToFinancialData(transactions));
+      });
+    }
+  }, [accountId]);
+
+  const handleChange = (event: SelectChangeEvent) => {
+    setAccountId(event.target.value);
   };
 
   return (
     <div className="flex flex-col h-screen p-4 gap-6 flex-1 overflow-y-auto">
       <h1 className="text-3xl font-bold">Tableau de bord</h1>
       <Select value={accountId} onChange={handleChange} className="w-fit">
-        <MenuItem value={1}>Compte principal</MenuItem>
-        <MenuItem value={2}>Compte secondaire</MenuItem>
+        {accounts.map((account) => (
+          <MenuItem key={account.id} value={account.id}>
+            {account.name}
+          </MenuItem>
+        ))}
       </Select>
       <div className="flex flex-row gap-6 w-full">
-        <BalanceChart />
-        <RevenueChart />
-        <ExpensesChart />
+        <BalanceChart financialData={financialData} />
+        <RevenueChart financialData={financialData} />
+        <ExpensesChart financialData={financialData} />
       </div>
-      <CashFlowChart />
+      <CashFlowChart financialData={financialData} />
     </div>
   );
 }
