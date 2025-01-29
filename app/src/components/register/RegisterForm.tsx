@@ -1,10 +1,13 @@
+import { registrationSchema } from "@/schemas/auth";
+import { register } from "@/utils/auth";
 import { Button, TextField } from "@mui/material";
+import { useNavigate } from "@tanstack/react-router";
 import { useFormik } from "formik";
 import toast from "react-hot-toast";
-import { registrationSchema } from "../../schemas/auth";
-import { register } from "../../utils/auth";
 
 export default function RegisterForm() {
+  const navigate = useNavigate();
+
   const formik = useFormik({
     initialValues: {
       first_name: "",
@@ -17,7 +20,10 @@ export default function RegisterForm() {
     onSubmit: async (values) => {
       await toast.promise(register(values), {
         loading: "Enregistrement en cours...",
-        success: "Enregistrement réussi !",
+        success: () => {
+          navigate({ to: "/login" });
+          return "Enregistrement réussi !";
+        },
         error: (err) => {
           switch (err.status) {
             case 409:
