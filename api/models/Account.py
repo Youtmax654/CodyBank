@@ -2,6 +2,7 @@ from enum import Enum
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field
 from datetime import datetime
+from enum import Enum
 
 
 class AccountType(Enum):

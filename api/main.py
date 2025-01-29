@@ -2,6 +2,7 @@ from api.routers import auth, accounts, beneficiaries, transactions, users
 from api.models.Transaction import Transaction, TransactionStatus
 from fastapi_utilities import repeat_every
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.db import create_db_and_tables, get_session
 from api.core.config import pending_transactions_interval
@@ -14,6 +15,18 @@ create_db_and_tables()
 
 app = FastAPI()
 
+origins = [
+    "http://localhost",
+    "http://localhost:5173",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 @repeat_every(seconds=10)
