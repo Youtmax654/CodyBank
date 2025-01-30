@@ -1,4 +1,6 @@
 from uuid import UUID
+
+from fastapi import HTTPException
 from api.models.Account import Account
 from api.models.Transaction import Transaction
 from sqlalchemy.orm import Session
@@ -15,6 +17,9 @@ def get_primary_by_user_id(session: Session, user_id: UUID):
         .filter(Account.user_id == user_id, Account.is_primary)
         .first()
     )
+
+    if not primary_account:
+        raise HTTPException(status_code=404, detail="Primary account not found")
 
     return primary_account
 

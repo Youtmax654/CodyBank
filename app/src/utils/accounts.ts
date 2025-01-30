@@ -9,6 +9,7 @@ export type Account = {
   balance: number;
   is_active: boolean;
   is_primary: boolean;
+  iban: string;
 };
 
 export async function getAccounts() {

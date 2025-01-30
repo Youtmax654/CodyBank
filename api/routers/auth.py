@@ -6,6 +6,7 @@ from api.core.config import algorithm, secret_key
 from api.core.db import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
+import random
 
 from api.models.Transaction import TransactionStatus, TransactionType
 from api.models.Account import Account
@@ -53,6 +54,7 @@ def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserRespo
         balance=100.00,
         is_primary=True,
         name="Compte principal",
+        iban=f"FR{''.join(str(random.randint(0, 9)) for _ in range(24))}"
     )
     session.add(account)
     session.commit()
