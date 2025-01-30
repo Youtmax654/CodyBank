@@ -1,5 +1,8 @@
+from uuid import UUID
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+from api.core.config import algorithm, secret_key
 from api.core.db import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
@@ -102,11 +105,13 @@ def update_password(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    if not pbkdf2_sha256.verify(body.password, user.password_hash):
+    if not pbkdf2_sha256.verify(body.old_password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid password")
 
     user.password_hash = pbkdf2_sha256.hash(body.new_password)
     session.commit()
     session.refresh(user)
 
-    return JSONResponse(content={"message": "Password updated"}).delete_cookie("token")
+    response = JSONResponse(content={"message": "Password updated"})
+    response.delete_cookie("token")
+    return response

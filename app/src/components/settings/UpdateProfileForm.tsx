@@ -40,7 +40,7 @@ export default function UpdateProfileForm() {
         email: user.email,
       });
     });
-  }, [formik]);
+  }, []);
 
   return (
     <form

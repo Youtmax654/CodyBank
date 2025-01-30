@@ -11,7 +11,8 @@ class CreateUserBody(BaseModel):
 
 
 class UpdatePasswordBody(BaseModel):
-    password: str
+    old_password: str
+    new_password: str
 
 
 class UserResponse(BaseModel):

@@ -43,6 +43,7 @@ export default function UpdatePasswordForm() {
         fullWidth
         id="old_password"
         name="old_password"
+        type="password"
         label="Mot de passe actuel"
         value={formik.values.old_password}
         onChange={formik.handleChange}
@@ -57,6 +58,7 @@ export default function UpdatePasswordForm() {
         fullWidth
         id="new_password"
         name="new_password"
+        type="password"
         label="Nouveau mot de passe"
         value={formik.values.new_password}
         onChange={formik.handleChange}
@@ -71,6 +73,7 @@ export default function UpdatePasswordForm() {
         fullWidth
         id="confirm_password"
         name="confirm_password"
+        type="password"
         label="Confirmer le mot de passe"
         value={formik.values.confirm_password}
         onChange={formik.handleChange}

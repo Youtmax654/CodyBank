@@ -1,5 +1,4 @@
-import { getAccount } from "@/utils/account";
-import { Account } from "@/utils/accounts";
+import { Account, getAccounts } from "@/utils/accounts";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { IconButton } from "@mui/material";
 import { Link } from "@tanstack/react-router";
@@ -13,7 +12,7 @@ export default function Accounts() {
   useEffect(() => {
     const fetchAccount = async () => {
       try {
-        const account = await getAccount();
+        const account = await getAccounts();
         if (!account || account.length === 0) {
           throw new Error("Aucun compte trouvé");
         }

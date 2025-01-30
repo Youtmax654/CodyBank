@@ -33,7 +33,7 @@ export const updatePasswordSchema = yup.object({
   new_password: yup
     .string()
     .matches(
-      /^(?=.*[0-9])(?=.*[!@#$%^&*])[a-zA-Z0-9!@#$%^&*]{8,}$/,
+      /^(?=.*[0-9])(?=.*[!@#$%^&*+])[a-zA-Z0-9!@#$%^&*+]{8,}$/,
       "Le nouveau mot de passe doit contenir au moins 8 caractères, 1 chiffre et 1 caractère spécial."
     )
     .required("Le nouveau mot de passe est requis"),
