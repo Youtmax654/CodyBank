@@ -1,3 +1,4 @@
+import Sidebar from "@/components/sidebar/Sidebar";
 import { isAuthenticated } from "@/utils/auth";
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 
@@ -14,8 +15,8 @@ export const Route = createFileRoute("/_authenticated")({
 
 function LayoutComponent() {
   return (
-    <div>
-      Hello "/_authenticated"!
+    <div className="flex flex-row h-screen w-full overflow-hidden">
+      <Sidebar />
       <Outlet />
     </div>
   );

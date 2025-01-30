@@ -1,11 +1,13 @@
 from fastapi.responses import JSONResponse
 from api.core.db import get_session
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
 
+from api.models.Transaction import TransactionStatus, TransactionType
 from api.models.Account import Account
 from api.models.User import User
 from api.schemas.user import CreateUserBody, LoginUserBody, UserResponse
+from api.services.transaction_service import create_transaction
 from api.services.user_service import generate_token
 from api.core.db import get_session
 
@@ -36,10 +38,26 @@ def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserRespo
     session.commit()
     session.refresh(user)
 
-    account = Account(user_id=user.id, balance=100.00, is_primary=True)
+    account = Account(
+        user_id=user.id,
+        balance=100.00,
+        is_primary=True,
+        name="Compte principal",
+    )
     session.add(account)
     session.commit()
     session.refresh(account)
+
+    transaction = create_transaction(
+        session,
+        account.id,
+        100.00,
+        None,
+        TransactionType.DEPOSIT,
+        TransactionStatus.CONFIRMED,
+    )
+    session.add(transaction)
+    session.commit()
 
     return UserResponse(
         id=user.id,
