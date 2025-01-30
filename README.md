@@ -35,6 +35,12 @@ Run the following command to install all necessary dependencies for both the bac
 npm run init
 ```
 
+For **Mac** and **Linux** users, you can run:
+
+```bash
+npm run init:mac
+```
+
 This command will:
 
 - Install Python dependencies in the `api/` directory.
