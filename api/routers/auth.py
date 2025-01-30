@@ -88,30 +88,3 @@ def login(body: LoginUserBody, session=Depends(get_session)):
     response = JSONResponse(content=content)
     response.set_cookie(key="token", value=content["token"])
     return response
-
-
-@router.put("/password")
-def update_password(
-    body: UpdatePasswordBody,
-    session=Depends(get_session),
-    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
-):
-    decoded_token = jwt.decode(
-        authorization.credentials, secret_key, algorithms=[algorithm]
-    )
-    user_id = decoded_token["user_id"]
-
-    user = session.query(User).filter(User.id == UUID(user_id)).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    if not pbkdf2_sha256.verify(body.old_password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid password")
-
-    user.password_hash = pbkdf2_sha256.hash(body.new_password)
-    session.commit()
-    session.refresh(user)
-
-    response = JSONResponse(content={"message": "Password updated"})
-    response.delete_cookie("token")
-    return response

@@ -15,6 +15,12 @@ class UpdatePasswordBody(BaseModel):
     new_password: str
 
 
+class UpdateProfileBody(BaseModel):
+    first_name: str
+    last_name: str
+    email: str
+
+
 class UserResponse(BaseModel):
     id: UUID
     first_name: str

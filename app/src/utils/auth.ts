@@ -55,3 +55,21 @@ export async function changePassword(body: UpdatePasswordBody) {
 
   return res.data;
 }
+
+type UpdateProfileBody = {
+  first_name: string;
+  last_name: string;
+  email: string;
+};
+export async function updateProfile(body: UpdateProfileBody) {
+  const token = Cookies.get("token");
+  if (!token) return false;
+
+  const res = await axios.put(`/api/me`, body, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;
+}

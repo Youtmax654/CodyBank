@@ -1,4 +1,5 @@
 import { updateProfileSchema } from "@/schemas/auth";
+import { updateProfile } from "@/utils/auth";
 import { getUser } from "@/utils/users";
 import { Button, TextField } from "@mui/material";
 import { useFormik } from "formik";
@@ -14,12 +15,9 @@ export default function UpdateProfileForm() {
     },
     validationSchema: updateProfileSchema,
     onSubmit: async (values) => {
-      await toast.promise(register(values), {
-        loading: "Enregistrement en cours...",
-        success: () => {
-          navigate({ to: "/login" });
-          return "Enregistrement réussi !";
-        },
+      await toast.promise(updateProfile(values), {
+        loading: "Mise à jour en cours...",
+        success: "Mise à jour réussie !",
         error: (err) => {
           switch (err.status) {
             case 409:
