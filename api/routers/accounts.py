@@ -2,6 +2,7 @@ from uuid import UUID
 
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
+from api.core.config import algorithm, secret_key
 from api.models.Transaction import TransactionStatus
 from api.services.account_service import (
     get_primary_by_user_id,
@@ -11,7 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from typing import List
 from api.core.config import algorithm, secret_key
 from api.core.db import get_session
-from api.models.Account import Account
+from api.models.Account import Account, AccountType
 from api.schemas.account import (
     AccountCreateBody,
     AccountDetailResponse,
@@ -19,6 +20,7 @@ from api.schemas.account import (
 )
 
 router = APIRouter()
+bearer_scheme = HTTPBearer()
 bearer_scheme = HTTPBearer()
 
 
@@ -37,6 +39,7 @@ def create_account(
     session.add(account)
     session.commit()
     session.refresh(account)
+
     return account
 
 

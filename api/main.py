@@ -2,6 +2,7 @@ from api.routers import auth, accounts, beneficiaries, transactions, users
 from api.models.Transaction import Transaction, TransactionStatus
 from fastapi_utilities import repeat_every
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from api.core.db import create_db_and_tables, get_session
 from api.core.config import pending_transactions_interval
