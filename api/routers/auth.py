@@ -1,4 +1,5 @@
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from api.core.db import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
@@ -6,12 +7,18 @@ from passlib.hash import pbkdf2_sha256
 from api.models.Transaction import TransactionStatus, TransactionType
 from api.models.Account import Account
 from api.models.User import User
-from api.schemas.user import CreateUserBody, LoginUserBody, UserResponse
+from api.schemas.user import (
+    CreateUserBody,
+    LoginUserBody,
+    UpdatePasswordBody,
+    UserResponse,
+)
 from api.services.transaction_service import create_transaction
 from api.services.user_service import generate_token
 from api.core.db import get_session
 
 router = APIRouter()
+bearer_scheme = HTTPBearer()
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
@@ -78,3 +85,28 @@ def login(body: LoginUserBody, session=Depends(get_session)):
     response = JSONResponse(content=content)
     response.set_cookie(key="token", value=content["token"])
     return response
+
+
+@router.put("/password")
+def update_password(
+    body: UpdatePasswordBody,
+    session=Depends(get_session),
+    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
+):
+    decoded_token = jwt.decode(
+        authorization.credentials, secret_key, algorithms=[algorithm]
+    )
+    user_id = decoded_token["user_id"]
+
+    user = session.query(User).filter(User.id == UUID(user_id)).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not pbkdf2_sha256.verify(body.password, user.password_hash):
+        raise HTTPException(status_code=401, detail="Invalid password")
+
+    user.password_hash = pbkdf2_sha256.hash(body.new_password)
+    session.commit()
+    session.refresh(user)
+
+    return JSONResponse(content={"message": "Password updated"}).delete_cookie("token")

@@ -33,3 +33,25 @@ export function isAuthenticated() {
   const decoded = jwtDecode<UserToken>(token);
   return !!decoded.user_id;
 }
+
+type UpdatePasswordBody = {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+};
+export async function changePassword(body: UpdatePasswordBody) {
+  const token = Cookies.get("token");
+  if (!token) return false;
+
+  if (body.new_password !== body.confirm_password) {
+    throw new Error("Passwords do not match");
+  }
+
+  const res = await axios.put(`/api/password`, body, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;
+}

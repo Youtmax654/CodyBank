@@ -10,6 +10,10 @@ class CreateUserBody(BaseModel):
     password: str
 
 
+class UpdatePasswordBody(BaseModel):
+    password: str
+
+
 class UserResponse(BaseModel):
     id: UUID
     first_name: str
