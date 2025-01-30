@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as AuthenticatedImport } from './routes/_authenticated'
 import { Route as AuthImport } from './routes/_auth'
 import { Route as IndexImport } from './routes/index'
+import { Route as AuthenticatedTransactionsImport } from './routes/_authenticated/transactions'
 import { Route as AuthenticatedLogoutImport } from './routes/_authenticated/logout'
 import { Route as AuthenticatedDashboardImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedAccountsImport } from './routes/_authenticated/accounts'
@@ -36,6 +37,12 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const AuthenticatedTransactionsRoute = AuthenticatedTransactionsImport.update({
+  id: '/transactions',
+  path: '/transactions',
+  getParentRoute: () => AuthenticatedRoute,
 } as any)
 
 const AuthenticatedLogoutRoute = AuthenticatedLogoutImport.update({
@@ -128,6 +135,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedLogoutImport
       parentRoute: typeof AuthenticatedImport
     }
+    '/_authenticated/transactions': {
+      id: '/_authenticated/transactions'
+      path: '/transactions'
+      fullPath: '/transactions'
+      preLoaderRoute: typeof AuthenticatedTransactionsImport
+      parentRoute: typeof AuthenticatedImport
+    }
   }
 }
 
@@ -149,12 +163,14 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAccountsRoute: typeof AuthenticatedAccountsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedLogoutRoute: typeof AuthenticatedLogoutRoute
+  AuthenticatedTransactionsRoute: typeof AuthenticatedTransactionsRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAccountsRoute: AuthenticatedAccountsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedLogoutRoute: AuthenticatedLogoutRoute,
+  AuthenticatedTransactionsRoute: AuthenticatedTransactionsRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
@@ -169,6 +185,7 @@ export interface FileRoutesByFullPath {
   '/accounts': typeof AuthenticatedAccountsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/logout': typeof AuthenticatedLogoutRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
 }
 
 export interface FileRoutesByTo {
@@ -179,6 +196,7 @@ export interface FileRoutesByTo {
   '/accounts': typeof AuthenticatedAccountsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/logout': typeof AuthenticatedLogoutRoute
+  '/transactions': typeof AuthenticatedTransactionsRoute
 }
 
 export interface FileRoutesById {
@@ -191,6 +209,7 @@ export interface FileRoutesById {
   '/_authenticated/accounts': typeof AuthenticatedAccountsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/logout': typeof AuthenticatedLogoutRoute
+  '/_authenticated/transactions': typeof AuthenticatedTransactionsRoute
 }
 
 export interface FileRouteTypes {
@@ -203,8 +222,17 @@ export interface FileRouteTypes {
     | '/accounts'
     | '/dashboard'
     | '/logout'
+    | '/transactions'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/login' | '/register' | '/accounts' | '/dashboard' | '/logout'
+  to:
+    | '/'
+    | ''
+    | '/login'
+    | '/register'
+    | '/accounts'
+    | '/dashboard'
+    | '/logout'
+    | '/transactions'
   id:
     | '__root__'
     | '/'
@@ -215,6 +243,7 @@ export interface FileRouteTypes {
     | '/_authenticated/accounts'
     | '/_authenticated/dashboard'
     | '/_authenticated/logout'
+    | '/_authenticated/transactions'
   fileRoutesById: FileRoutesById
 }
 
@@ -260,7 +289,8 @@ export const routeTree = rootRoute
       "children": [
         "/_authenticated/accounts",
         "/_authenticated/dashboard",
-        "/_authenticated/logout"
+        "/_authenticated/logout",
+        "/_authenticated/transactions"
       ]
     },
     "/_auth/login": {
@@ -281,6 +311,10 @@ export const routeTree = rootRoute
     },
     "/_authenticated/logout": {
       "filePath": "_authenticated/logout.tsx",
+      "parent": "/_authenticated"
+    },
+    "/_authenticated/transactions": {
+      "filePath": "_authenticated/transactions.tsx",
       "parent": "/_authenticated"
     }
   }
