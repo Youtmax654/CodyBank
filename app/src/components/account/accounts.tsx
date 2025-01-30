@@ -8,8 +8,7 @@ import AddAccount from "./addAccount/addAccount";
 
 export default function Accounts() {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
-  const [ibanMap, setIbanMap] = useState<{ [key: string]: string }>({});
-
+  
   useEffect(() => {
     const fetchAccount = async () => {
       try {
@@ -17,33 +16,18 @@ export default function Accounts() {
         if (!account || account.length === 0) {
           throw new Error("Aucun compte trouvé");
         }
+
         setAccounts(account);
 
-        const savedIbans = JSON.parse(localStorage.getItem("ibanMap") || "{}");
-
-        const newIbanMap = { ...savedIbans };
-        account.forEach((acc: Account) => {
-          if (!newIbanMap[acc.id]) {
-            newIbanMap[acc.id] = generateIban();
-          }
-        });
-
-        localStorage.setItem("ibanMap", JSON.stringify(newIbanMap));
-        setIbanMap(newIbanMap);
       } catch (error) {
-        console.error(error);
+        console.error("Erreur lors de la récupération des comptes :", error);
+        setAccounts([]);
       }
     };
 
+
     fetchAccount();
   }, []);
-
-  const generateIban = () => {
-    const randomNumbers = Array.from({ length: 24 }, () =>
-      Math.floor(Math.random() * 10)
-    ).join("");
-    return `FR${randomNumbers}`;
-  };
 
   const totalBalance =
     accounts?.reduce((acc, account) => acc + account.balance, 0) || 0;
@@ -78,7 +62,7 @@ export default function Accounts() {
                   </div>
                   <div className="flex flex-row justify-between">
                     <p>{account ? `${account?.balance} €` : "Chargement..."}</p>
-                    <p>{ibanMap[account.id] || "Chargement..."}</p>
+                    <p>{account.iban || "IBAN non disponible"}</p>
                   </div>
                   <div className="flex flex-row gap-4">
                     <Link to="/transactions">Transactions</Link>

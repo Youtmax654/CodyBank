@@ -19,3 +19,5 @@ class Account(SQLModel, table=True):
     created_at: datetime = Field(default_factory=datetime.now)
     is_active: bool = Field(default=True)
     type: AccountType = Field(nullable=False, default=AccountType.CHECKING)
+    iban: str = Field(unique=True, nullable=False)
+
