@@ -16,6 +16,7 @@ export async function getAccounts() {
   if (!token) throw new Error("No token");
 
   const res = await axios.get("/api/accounts", {
+    withCredentials: true,
     headers: {
       Authorization: `Bearer ${token}`,
     },
