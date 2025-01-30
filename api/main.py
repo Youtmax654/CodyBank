@@ -15,6 +15,14 @@ create_db_and_tables()
 
 app = FastAPI()
 
+# Configuration CORS
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],  # URL du frontend
+    allow_credentials=True,
+    allow_methods=["*"],  # Permet toutes les méthodes HTTP
+    allow_headers=["*"],  # Permet tous les headers
+)
 
 @app.on_event("startup")
 @repeat_every(seconds=10)

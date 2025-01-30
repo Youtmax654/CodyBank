@@ -7,5 +7,9 @@
     "init:app": "cd app && npm install",
     "api": "cd api && source venv/bin/activate || venv\\Scripts\\activate && fastapi dev main.py",
     "app": "cd app && npm run dev"
+  },
+  "dependencies": {
+    "@mui/icons-material": "^6.4.2",
+    "date-fns": "^4.1.0"
   }
 }

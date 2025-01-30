@@ -1,10 +1,10 @@
-import { getAccount } from "@/utils/account";
-import { Account } from "@/utils/accounts";
+import { Account, getAccounts } from "@/utils/accounts";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import { IconButton } from "@mui/material";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import AddAccount from "./addAccount/addAccount";
+import DeleteAccount from "./deleteAccount/deleteAccount";
 
 export default function Accounts() {
   const [accounts, setAccounts] = useState<Account[] | null>(null);
@@ -12,25 +12,31 @@ export default function Accounts() {
   useEffect(() => {
     const fetchAccount = async () => {
       try {
-        const account = await getAccount();
+        const account = await getAccounts();
         if (!account || account.length === 0) {
           throw new Error("Aucun compte trouvé");
         }
 
         setAccounts(account);
-
       } catch (error) {
         console.error("Erreur lors de la récupération des comptes :", error);
         setAccounts([]);
       }
     };
-
-
+    
     fetchAccount();
   }, []);
+  
 
   const totalBalance =
     accounts?.reduce((acc, account) => acc + account.balance, 0) || 0;
+
+  const handleAccountDeleted = (accountIdToRemove: string) => {
+    // Remove the deleted account from the accounts list
+    setAccounts(prevAccounts =>
+      prevAccounts ? prevAccounts.filter(account => account.id !== accountIdToRemove) : null
+    );
+  };
 
   return (
     <>
@@ -48,7 +54,7 @@ export default function Accounts() {
       <div className="flex flex-wrap gap-8 justify-center">
         {accounts &&
           accounts.length > 0 &&
-          accounts.map((account) => (
+          accounts.filter((account) => account.is_active).map((account) => (
             <div key={account.id} className="w-1/3 h-1/3">
               <div className="border-solid border-2 border-black w-full h-1/3 m-auto p-5">
                 <div className="flex flex-col gap-4">
@@ -56,9 +62,14 @@ export default function Accounts() {
                     <p className="font-bold">
                       {account.name ? `${account.name}` : "Chargement..."}
                     </p>
-                    <IconButton>
-                      <MoreVertIcon color="action" />
-                    </IconButton>
+                    {!account.is_primary ? (
+                      <DeleteAccount
+                        accountId={account.id}
+                        onAccountDeleted={() => handleAccountDeleted(account.id)}
+                      />
+                    ) : (
+                      <></>
+                    )}
                   </div>
                   <div className="flex flex-row justify-between">
                     <p>{account ? `${account?.balance} €` : "Chargement..."}</p>
