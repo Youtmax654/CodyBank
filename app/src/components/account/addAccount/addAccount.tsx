@@ -1,6 +1,5 @@
 import { newAccountSchema } from "@/schemas/newAccount";
-import { AccountType, addAccount } from "@/utils/accounts";
-import { Account } from "@/utils/accounts";
+import { Account, AccountType, addAccount } from "@/utils/accounts";
 import {
   Box,
   Button,

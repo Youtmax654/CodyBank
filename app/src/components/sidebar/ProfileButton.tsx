@@ -41,7 +41,7 @@ export default function ProfileButton() {
         }}
       >
         <MenuItem>
-          <Link to="/profile" className="flex gap-2 items-center">
+          <Link to="/settings" className="flex gap-2 items-center">
             <SettingsIcon fontSize="small" />
             Paramètres
           </Link>

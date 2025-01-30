@@ -1,4 +1,8 @@
+from uuid import UUID
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+import jwt
+from api.core.config import algorithm, secret_key
 from api.core.db import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
@@ -6,12 +10,18 @@ from passlib.hash import pbkdf2_sha256
 from api.models.Transaction import TransactionStatus, TransactionType
 from api.models.Account import Account
 from api.models.User import User
-from api.schemas.user import CreateUserBody, LoginUserBody, UserResponse
+from api.schemas.user import (
+    CreateUserBody,
+    LoginUserBody,
+    UpdatePasswordBody,
+    UserResponse,
+)
 from api.services.transaction_service import create_transaction
 from api.services.user_service import generate_token
 from api.core.db import get_session
 
 router = APIRouter()
+bearer_scheme = HTTPBearer()
 
 
 @router.post("/register", response_model=UserResponse, status_code=201)
