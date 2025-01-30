@@ -14,6 +14,7 @@ class AccountResponse(BaseModel):
     id: UUID
     name: str
     balance: float
+    name: str
 
 
 class AccountDetailResponse(BaseModel):
