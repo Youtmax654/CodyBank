@@ -34,7 +34,64 @@ export function isAuthenticated() {
   return !!decoded.user_id;
 }
 
-export function logout() {
-  Cookies.remove("token");
-  localStorage.clear(); // Optionnel : effacer tout le localStorage
+type UpdatePasswordBody = {
+  old_password: string;
+  new_password: string;
+  confirm_password: string;
+};
+export async function changePassword(body: UpdatePasswordBody) {
+  const token = Cookies.get("token");
+  if (!token) return false;
+
+  if (body.new_password !== body.confirm_password) {
+    throw new Error("Passwords do not match");
+  }
+
+  const res = await axios.put(`/api/password`, body, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return res.data;
+}
+
+type UpdateProfileBody = {
+  first_name: string;
+  last_name: string;
+  email: string;
+};
+export async function updateProfile(body: UpdateProfileBody) {
+  const token = Cookies.get("token");
+  if (!token) return false;
+
+  const res = await axios.put(`/api/me`, body, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  
+    return res.data;
+}
+
+export async function checkPassword(body: { password: string }) {
+  const token = Cookies.get("token");
+  if (!token) return false;
+
+  const userRes = await axios.get("/api/me", {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const user = userRes.data;
+
+  try {
+    const res = await axios.post(`/api/login`, {
+      email: user.email,
+      password: body.password,
+    });
+    return res.status === 200;
+  } catch (error) {
+    return false;
+  }
 }

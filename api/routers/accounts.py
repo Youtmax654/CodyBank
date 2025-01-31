@@ -1,3 +1,4 @@
+import random
 from uuid import UUID
 
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -21,7 +22,6 @@ from api.schemas.account import (
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()
-bearer_scheme = HTTPBearer()
 
 
 @router.post("/accounts", response_model=AccountResponse)
@@ -35,7 +35,14 @@ def create_account(
     )
     user_id = UUID(decoded_token["user_id"])
 
-    account = Account(user_id=user_id, name=body.name, balance=0.00, type=body.type)
+    random_numbers = "".join(str(random.randint(0, 9)) for _ in range(24))
+    iban = f"FR{random_numbers}"
+    print(f"IBAN généré : {iban}")
+
+    account = Account(
+        user_id=user_id, name=body.name, balance=0.00, type=body.type, iban=iban
+    )
+    print(f"Compte créé avec IBAN : {account.iban}")
     session.add(account)
     session.commit()
     session.refresh(account)

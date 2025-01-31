@@ -14,7 +14,9 @@ class AccountResponse(BaseModel):
     id: UUID
     name: str
     balance: float
-    name: str
+    is_primary: bool
+    is_active: bool
+    iban: str
 
 
 class AccountDetailResponse(BaseModel):
@@ -25,3 +27,4 @@ class AccountDetailResponse(BaseModel):
     is_primary: bool
     created_at: datetime
     is_active: bool
+    iban: str

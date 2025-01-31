@@ -36,16 +36,6 @@ export default function ProfileButton() {
     setAnchorEl(null);
   };
 
-  const handleLogout = () => {
-    authLogout();
-    navigate('/login');
-  };
-
-  const handleSettings = () => {
-    navigate('/settings');
-    handleClose();
-  };
-
   if (!user) return null;
 
   return (
@@ -112,11 +102,11 @@ export default function ProfileButton() {
           horizontal: 'right',
         }}
       >
-        <MenuItem onClick={handleSettings}>
-          <ListItemIcon>
-            <SettingsIcon />
-          </ListItemIcon>
-          <ListItemText>Paramètres</ListItemText>
+        <MenuItem>
+          <Link to="/settings" className="flex gap-2 items-center">
+            <SettingsIcon fontSize="small" />
+            Paramètres
+          </Link>
         </MenuItem>
 
         <MenuItem>
@@ -136,11 +126,11 @@ export default function ProfileButton() {
           />
         </MenuItem>
 
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <LogoutIcon />
-          </ListItemIcon>
-          <ListItemText>Se déconnecter</ListItemText>
+        <MenuItem>
+          <Link to="/logout" className="flex gap-2 items-center">
+            <Logout fontSize="small" />
+            Se déconnecter
+          </Link>
         </MenuItem>
       </Menu>
     </>

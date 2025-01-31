@@ -54,9 +54,14 @@ function RouteComponent() {
 
   useEffect(() => {
     if (accountId) {
-      getTransactionsByAccountId(accountId).then((transactions) => {
-        setFinancialData(convertTransactionsToFinancialData(transactions));
-      });
+      getTransactionsByAccountId(accountId)
+        .then((transactions) => {
+          setFinancialData(convertTransactionsToFinancialData(transactions));
+        })
+        .catch((error) => {
+          setFinancialData([]);
+          console.error(error);
+        });
     }
   }, [accountId]);
 
