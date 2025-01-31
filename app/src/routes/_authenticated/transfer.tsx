@@ -7,7 +7,6 @@ import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
 import DeleteIcon from "@mui/icons-material/Delete";
 import SendIcon from "@mui/icons-material/Send";
 import {
-  Alert,
   Box,
   Button,
   Card,
@@ -27,6 +26,7 @@ import {
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 export const Route = createFileRoute("/_authenticated/transfer")({
   component: TransferPage,
@@ -45,8 +45,6 @@ function TransferPage() {
   const [destinationIban, setDestinationIban] = useState<string>("");
   const [destinationName, setDestinationName] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
   const [isAddBeneficiaryModalOpen, setIsAddBeneficiaryModalOpen] =
     useState(false);
 
@@ -83,15 +81,14 @@ function TransferPage() {
       return response.data;
     },
     onSuccess: () => {
-      // Rafraîchir la liste des bénéficiaires
-      // Le useQuery se chargera de mettre à jour automatiquement
+      toast.success("Bénéficiaire supprimé avec succès");
     },
     onError: (error: any) => {
       const errorMessage =
         error.response?.data?.detail ||
         error.response?.data?.message ||
         "Erreur lors de la suppression du bénéficiaire";
-      setError(errorMessage);
+      toast.error(errorMessage);
     },
   });
 
@@ -112,8 +109,7 @@ function TransferPage() {
       }
     },
     onSuccess: () => {
-      setSuccess("Virement effectué avec succès !");
-      setError(null);
+      toast.success("Virement effectué avec succès !");
 
       // Réinitialiser les champs
       setSourceAccountIban("");
@@ -128,8 +124,7 @@ function TransferPage() {
         error.response?.data?.detail ||
         error.response?.data?.message ||
         "Erreur lors du virement";
-      setError(errorMessage);
-      setSuccess(null);
+      toast.error(errorMessage);
       console.error("Transfer mutation error:", error);
     },
   });
@@ -140,13 +135,13 @@ function TransferPage() {
 
   const handleTransfer = () => {
     if (!sourceAccountIban) {
-      setError("Veuillez sélectionner un compte source");
+      toast.error("Veuillez sélectionner un compte source");
       return;
     }
 
     const transferAmount = parseFloat(amount);
     if (isNaN(transferAmount) || transferAmount <= 0) {
-      setError("Montant invalide");
+      toast.error("Montant invalide");
       return;
     }
 
@@ -155,12 +150,12 @@ function TransferPage() {
       (acc) => acc.iban === sourceAccountIban
     );
     if (!sourceAccount) {
-      setError("Compte source introuvable");
+      toast.error("Compte source introuvable");
       return;
     }
 
     if (transferAmount > sourceAccount.balance) {
-      setError(
+      toast.error(
         `Solde insuffisant. Votre solde actuel est de ${sourceAccount.balance.toFixed(2)} €`
       );
       return;
@@ -170,23 +165,23 @@ function TransferPage() {
     switch (transferType) {
       case "internal":
         if (!destinationAccountIban) {
-          setError("Veuillez sélectionner un compte destination");
+          toast.error("Veuillez sélectionner un compte destination");
           return;
         }
         break;
       case "beneficiary":
         if (!selectedBeneficiary) {
-          setError("Veuillez sélectionner un bénéficiaire");
+          toast.error("Veuillez sélectionner un bénéficiaire");
           return;
         }
         break;
       case "external":
         if (!destinationIban) {
-          setError("Veuillez saisir un IBAN");
+          toast.error("Veuillez saisir un IBAN");
           return;
         }
         if (!destinationName) {
-          setError("Veuillez saisir un nom de bénéficiaire");
+          toast.error("Veuillez saisir un nom de bénéficiaire");
           return;
         }
         break;
@@ -229,18 +224,6 @@ function TransferPage() {
           <CompareArrowsIcon sx={{ mr: 2, verticalAlign: "middle" }} />
           Effectuer un virement
         </Typography>
-
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }}>
-            {error}
-          </Alert>
-        )}
-
-        {success && (
-          <Alert severity="success" sx={{ mb: 2 }}>
-            {success}
-          </Alert>
-        )}
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
