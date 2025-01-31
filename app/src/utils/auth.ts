@@ -33,3 +33,8 @@ export function isAuthenticated() {
   const decoded = jwtDecode<UserToken>(token);
   return !!decoded.user_id;
 }
+
+export function logout() {
+  Cookies.remove("token");
+  localStorage.clear(); // Optionnel : effacer tout le localStorage
+}

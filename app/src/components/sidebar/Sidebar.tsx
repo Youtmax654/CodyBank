@@ -1,20 +1,49 @@
-import { Divider } from "@mui/material";
-import NavLinks from "./NavLinks";
-import ProfileButton from "./ProfileButton";
+import React from 'react';
+import { 
+  Drawer, 
+  Typography, 
+  Box 
+} from '@mui/material';
+import NavLinks from './NavLinks';
+import ProfileButton from './ProfileButton';
 
 export default function Sidebar() {
   return (
-    <div className="flex flex-col bg-gray-200 min-w-60 h-full justify-between">
-      <div className="flex flex-col gap-8">
-        <h1 className="text-3xl font-bold flex items-center mt-4 ml-2">
-          🏦 CodyBank
-        </h1>
-        <NavLinks />
-      </div>
-      <div>
-        <Divider />
-        <ProfileButton />
-      </div>
-    </div>
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: 240,
+        flexShrink: 0,
+        '& .MuiDrawer-paper': {
+          width: 240,
+          boxSizing: 'border-box',
+        },
+      }}
+    >
+      <Box sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        height: '100%',
+        justifyContent: 'space-between'
+      }}>
+        <Box>
+          <Typography 
+            variant="h6" 
+            sx={{ 
+              p: 2, 
+              textAlign: 'center',
+              fontWeight: 'bold'
+            }}
+          >
+            🏦 CodyBank
+          </Typography>
+          <NavLinks />
+        </Box>
+        
+        <Box sx={{ p: 2 }}>
+          <ProfileButton />
+        </Box>
+      </Box>
+    </Drawer>
   );
 }
