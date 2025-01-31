@@ -12,6 +12,7 @@ from api.schemas.beneficiary import (
     BeneficiaryUpdateBody,
 )
 from api.services.transaction_service import (
+    get_account_by_iban,
     get_account_by_id,
 )
 
@@ -24,8 +25,14 @@ bearer_scheme = HTTPBearer()
 def create_beneficiary(
     body: BeneficiaryBody,
     session=Depends(get_session),
+    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ):
-    account = get_account_by_id(session, body.account_id)
+    decoded_token = jwt.decode(
+        authorization.credentials, secret_key, algorithms=[algorithm]
+    )
+    user_id = UUID(decoded_token["user_id"])
+
+    account = get_account_by_iban(session, body.iban)
 
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
@@ -34,14 +41,14 @@ def create_beneficiary(
         raise HTTPException(status_code=403, detail="Account is inactive")
 
     beneficiary_account = (
-        session.query(Account).filter(Account.id == body.account_id).first()
+        session.query(Account).filter(Account.iban == body.iban).first()
     )
     if not beneficiary_account:
         raise HTTPException(status_code=404, detail="Account not found")
 
-    accounts = session.query(Account).filter(Account.user_id == body.user_id).all()
+    accounts = session.query(Account).filter(Account.user_id == user_id).all()
     for account in accounts:
-        if account.id == body.account_id:
+        if account.iban == body.iban:
             raise HTTPException(
                 status_code=400,
                 detail="You cannot create a beneficiary with your own account",
@@ -50,8 +57,8 @@ def create_beneficiary(
     beneficiary_exist = (
         session.query(Beneficiary)
         .filter(
-            Beneficiary.user_id == body.user_id,
-            Beneficiary.account_id == body.account_id,
+            Beneficiary.user_id == user_id,
+            Beneficiary.iban == body.iban,
         )
         .first()
     )
@@ -62,9 +69,9 @@ def create_beneficiary(
         raise HTTPException(status_code=400, detail="Beneficiary name is required")
 
     beneficiary = Beneficiary(
-        user_id=body.user_id,
+        user_id=user_id,
         name=body.name,
-        account_id=body.account_id,
+        iban=body.iban,
     )
 
     session.add(beneficiary)
@@ -92,7 +99,7 @@ def get_beneficiaries(
             id=beneficiary.id,
             name=beneficiary.name,
             user_id=beneficiary.user_id,
-            account_id=beneficiary.account_id,
+            iban=beneficiary.iban,
             created_at=beneficiary.created_at,
         )
         for beneficiary in beneficiaries

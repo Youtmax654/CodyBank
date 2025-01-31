@@ -12,6 +12,11 @@ def get_account_by_id(session: Session, account_id: UUID) -> Account:
     return account
 
 
+def get_account_by_iban(session: Session, iban: str) -> Account:
+    account = session.query(Account).filter(Account.iban == iban).first()
+    return account
+
+
 def update_account_balance(session: Session, account: Account, amount: float):
     account.balance += amount
     session.add(account)

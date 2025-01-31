@@ -54,7 +54,7 @@ def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserRespo
         balance=100.00,
         is_primary=True,
         name="Compte principal",
-        iban=f"FR{''.join(str(random.randint(0, 9)) for _ in range(24))}"
+        iban=f"FR{''.join(str(random.randint(0, 9)) for _ in range(24))}",
     )
     session.add(account)
     session.commit()
@@ -62,9 +62,9 @@ def create_user(body: CreateUserBody, session=Depends(get_session)) -> UserRespo
 
     transaction = create_transaction(
         session,
-        account.id,
-        100.00,
         None,
+        100.00,
+        account.id,
         TransactionType.DEPOSIT,
         TransactionStatus.CONFIRMED,
     )

@@ -1,25 +1,22 @@
-import React, { useState } from 'react';
-import { 
-  Button, 
-  Menu, 
-  MenuItem, 
-  ListItemIcon, 
-  ListItemText,
-  Box,
-  Typography,
-  Switch,
-  FormControlLabel
-} from '@mui/material';
-import { 
-  Settings as SettingsIcon, 
-  Logout as LogoutIcon,
+import { useTheme } from "@/contexts/ThemeContext";
+import useUser from "@/hooks/useUser";
+import {
   Brightness4 as DarkModeIcon,
-  Brightness7 as LightModeIcon
-} from '@mui/icons-material';
-import { useNavigate } from '@tanstack/react-router';
-import useUser from '@/hooks/useUser';
-import { useTheme } from '@/contexts/ThemeContext';
-import { logout as authLogout } from '@/utils/auth';
+  Brightness7 as LightModeIcon,
+  Logout,
+  Settings as SettingsIcon,
+} from "@mui/icons-material";
+import {
+  Box,
+  FormControlLabel,
+  ListItemIcon,
+  Menu,
+  MenuItem,
+  Switch,
+  Typography,
+} from "@mui/material";
+import { useNavigate } from "@tanstack/react-router";
+import React, { useState } from "react";
 
 export default function ProfileButton() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -36,54 +33,59 @@ export default function ProfileButton() {
     setAnchorEl(null);
   };
 
+  const handleSettings = () => {
+    navigate({ to: "/settings" });
+  };
+
+  const handleLogout = () => {
+    navigate({ to: "/logout" });
+  };
+
   if (!user) return null;
 
   return (
     <>
-      <Button
+      <button
         id="profile-button"
-        aria-controls={open ? 'profile-menu' : undefined}
+        aria-controls={open ? "profile-menu" : undefined}
         aria-haspopup="true"
-        aria-expanded={open ? 'true' : undefined}
+        aria-expanded={open ? "true" : undefined}
         onClick={handleClick}
-        fullWidth
-        variant="text"
-        sx={{ 
-          justifyContent: 'flex-start', 
-          textTransform: 'none',
-          px: 2,
-          py: 1.5
-        }}
+        className="flex gap-2 items-center p-4 hover:bg-black/10 cursor-pointer w-full"
       >
-        <Box sx={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          width: '100%' 
-        }}>
-          <Box 
-            sx={{ 
-              width: 40, 
-              height: 40, 
-              borderRadius: '50%', 
-              bgcolor: 'primary.main', 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              mr: 2
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            width: "100%",
+          }}
+        >
+          <Box
+            sx={{
+              width: 40,
+              height: 40,
+              borderRadius: "50%",
+              bgcolor: "primary.main",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              mr: 2,
             }}
           >
             <Typography variant="h6" color="white">
-              {user.name ? user.name[0].toUpperCase() : ''}
+              {user.first_name ? user.first_name[0].toUpperCase() : ""}
             </Typography>
           </Box>
-          <Box sx={{ flexGrow: 1 }}>
-            <Typography variant="body1">{user.name}</Typography>
-            <Typography variant="body2" color="text.secondary">
+          <Box>
+            <Typography variant="body1">
+              {user.first_name} {user.last_name}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
               {user.email}
             </Typography>
           </Box>
         </Box>
-      </Button>
+      </button>
 
       <Menu
         id="profile-menu"
@@ -91,46 +93,42 @@ export default function ProfileButton() {
         open={open}
         onClose={handleClose}
         MenuListProps={{
-          'aria-labelledby': 'profile-button',
+          "aria-labelledby": "profile-button",
         }}
         anchorOrigin={{
-          vertical: 'top',
-          horizontal: 'right',
+          vertical: "top",
+          horizontal: "right",
         }}
         transformOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right',
+          vertical: "bottom",
+          horizontal: "right",
         }}
       >
-        <MenuItem>
-          <Link to="/settings" className="flex gap-2 items-center">
-            <SettingsIcon fontSize="small" />
-            Paramètres
-          </Link>
+        <MenuItem onClick={handleSettings}>
+          <SettingsIcon fontSize="small" />
+          Paramètres
         </MenuItem>
 
         <MenuItem>
           <ListItemIcon>
-            {mode === 'dark' ? <LightModeIcon /> : <DarkModeIcon />}
+            {mode === "dark" ? <LightModeIcon /> : <DarkModeIcon />}
           </ListItemIcon>
           <FormControlLabel
             control={
               <Switch
-                checked={mode === 'dark'}
+                checked={mode === "dark"}
                 onChange={toggleMode}
                 color="primary"
               />
             }
-            label={mode === 'dark' ? 'Mode Clair' : 'Mode Sombre'}
+            label={mode === "dark" ? "Mode Clair" : "Mode Sombre"}
             sx={{ ml: 0 }}
           />
         </MenuItem>
 
-        <MenuItem>
-          <Link to="/logout" className="flex gap-2 items-center">
-            <Logout fontSize="small" />
-            Se déconnecter
-          </Link>
+        <MenuItem onClick={handleLogout}>
+          <Logout fontSize="small" />
+          Se déconnecter
         </MenuItem>
       </Menu>
     </>

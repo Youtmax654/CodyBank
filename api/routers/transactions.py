@@ -14,6 +14,7 @@ from api.schemas.transactions import (
 )
 from api.services.transaction_service import (
     create_transaction,
+    get_account_by_iban,
     get_account_by_id,
     update_account_balance,
 )
@@ -53,16 +54,16 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
     if body.amount < 10:
         raise HTTPException(status_code=400, detail="Amount must be greater than 10")
 
-    if body.source_account_id == body.destination_account_id:
+    if body.source_account_iban == body.destination_account_iban:
         raise HTTPException(
             status_code=400, detail="Source and destination accounts cannot be the same"
         )
 
-    source_account = get_account_by_id(session, body.source_account_id)
+    source_account = get_account_by_iban(session, body.source_account_iban)
     if not source_account:
         raise HTTPException(status_code=404, detail="Source account not found")
 
-    destination_account = get_account_by_id(session, body.destination_account_id)
+    destination_account = get_account_by_iban(session, body.destination_account_iban)
     if not destination_account:
         raise HTTPException(status_code=404, detail="Destination account not found")
 
@@ -78,11 +79,11 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
     update_account_balance(session, source_account, -body.amount)
     transaction = create_transaction(
         session,
-        destination_account.id,
-        body.amount,
         source_account.id,
+        body.amount,
+        destination_account.id,
         TransactionType.TRANSFER,
-        TransactionStatus.CONFIRMED,
+        TransactionStatus.PENDING,
     )
 
     return transaction
@@ -90,13 +91,15 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
 
 @router.post("/transfer")
 def transfer_money(
-    body: SendMoney, 
+    body: SendMoney,
     session=Depends(get_session),
-    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme),
 ) -> TransactionResponse:
     # Vérifier que les comptes source et destination sont différents
     if body.source_account_id == body.destination_account_id:
-        raise HTTPException(status_code=400, detail="Source and destination accounts must be different")
+        raise HTTPException(
+            status_code=400, detail="Source and destination accounts must be different"
+        )
 
     # Vérifier que le montant est positif
     if body.amount <= 0:
@@ -118,7 +121,10 @@ def transfer_money(
 
     # Vérifier que le compte source a suffisamment de fonds
     if source_account.balance < body.amount:
-        raise HTTPException(status_code=400, detail=f"Insufficient funds. Current balance: {source_account.balance}")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Insufficient funds. Current balance: {source_account.balance}",
+        )
 
     # Créer une transaction de transfert
     transaction = create_transaction(
@@ -127,7 +133,7 @@ def transfer_money(
         body.amount,
         body.destination_account_id,
         TransactionType.TRANSFER,
-        TransactionStatus.PENDING
+        TransactionStatus.PENDING,
     )
 
     # Mettre à jour les soldes des comptes
@@ -144,6 +150,9 @@ def transfer_money(
 @router.get("/transactions")
 def get_transactions(account_id: UUID, session=Depends(get_session)):
     account = get_account_by_id(session, account_id)
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+
     if not account.is_active:
         raise HTTPException(status_code=403, detail="Account is inactive")
 

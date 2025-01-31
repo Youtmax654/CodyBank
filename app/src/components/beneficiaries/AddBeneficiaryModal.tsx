@@ -1,27 +1,30 @@
-import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogTitle, 
-  DialogContent, 
-  DialogActions, 
-  Button, 
-  TextField, 
-  Typography,
+import axiosInstance from "@/utils/axios";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import {
+  Alert,
   Box,
-  Alert
-} from '@mui/material';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import axiosInstance from '@/utils/axios';
-import PersonAddIcon from '@mui/icons-material/PersonAdd';
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+  Typography,
+} from "@mui/material";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 
 interface AddBeneficiaryModalProps {
   open: boolean;
   onClose: () => void;
 }
 
-export default function AddBeneficiaryModal({ open, onClose }: AddBeneficiaryModalProps) {
-  const [name, setName] = useState('');
-  const [iban, setIban] = useState('');
+export default function AddBeneficiaryModal({
+  open,
+  onClose,
+}: AddBeneficiaryModalProps) {
+  const [name, setName] = useState("");
+  const [iban, setIban] = useState("");
   const [error, setError] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
@@ -33,55 +36,51 @@ export default function AddBeneficiaryModal({ open, onClose }: AddBeneficiaryMod
     },
     onSuccess: () => {
       // Invalider et recharger la liste des bénéficiaires
-      queryClient.invalidateQueries({ queryKey: ['beneficiaries'] });
-      
+      queryClient.invalidateQueries({ queryKey: ["beneficiaries"] });
+
       // Réinitialiser les champs et fermer la modal
-      setName('');
-      setIban('');
+      setName("");
+      setIban("");
       setError(null);
       onClose();
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 
-                           error.response?.data?.message || 
-                           'Erreur lors de l\'ajout du bénéficiaire';
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Erreur lors de l'ajout du bénéficiaire";
       setError(errorMessage);
-    }
+    },
   });
 
   const handleAddBeneficiary = () => {
     // Validation de base
     if (!name.trim()) {
-      setError('Veuillez saisir un nom de bénéficiaire');
+      setError("Veuillez saisir un nom de bénéficiaire");
       return;
     }
 
     // Validation IBAN (format simplifié)
     const ibanRegex = /^[A-Z]{2}\d{2}[A-Z0-9]{4,}$/;
-    if (!iban.trim() || !ibanRegex.test(iban.replace(/\s/g, ''))) {
-      setError('Veuillez saisir un IBAN valide');
+    if (!iban.trim() || !ibanRegex.test(iban.replace(/\s/g, ""))) {
+      setError("Veuillez saisir un IBAN valide");
       return;
     }
 
     // Supprimer les espaces de l'IBAN
-    const cleanedIban = iban.replace(/\s/g, '');
+    const cleanedIban = iban.replace(/\s/g, "");
 
     // Appeler la mutation
     addBeneficiaryMutation.mutate({
       name: name.trim(),
-      iban: cleanedIban
+      iban: cleanedIban,
     });
   };
 
   return (
-    <Dialog 
-      open={open} 
-      onClose={onClose}
-      maxWidth="xs"
-      fullWidth
-    >
+    <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
       <DialogTitle>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
           <PersonAddIcon />
           <Typography variant="h6">Ajouter un bénéficiaire</Typography>
         </Box>
@@ -89,11 +88,7 @@ export default function AddBeneficiaryModal({ open, onClose }: AddBeneficiaryMod
 
       <DialogContent>
         {error && (
-          <Alert 
-            severity="error" 
-            sx={{ mb: 2 }}
-            onClose={() => setError(null)}
-          >
+          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
@@ -122,20 +117,16 @@ export default function AddBeneficiaryModal({ open, onClose }: AddBeneficiaryMod
       </DialogContent>
 
       <DialogActions>
-        <Button 
-          onClick={onClose} 
-          color="secondary"
-          variant="outlined"
-        >
+        <Button onClick={onClose} color="secondary" variant="outlined">
           Annuler
         </Button>
-        <Button 
-          onClick={handleAddBeneficiary} 
+        <Button
+          onClick={handleAddBeneficiary}
           color="primary"
           variant="contained"
-          disabled={addBeneficiaryMutation.isLoading}
+          disabled={addBeneficiaryMutation.isPending}
         >
-          {addBeneficiaryMutation.isLoading ? 'Ajout en cours...' : 'Ajouter'}
+          {addBeneficiaryMutation.isPending ? "Ajout en cours..." : "Ajouter"}
         </Button>
       </DialogActions>
     </Dialog>

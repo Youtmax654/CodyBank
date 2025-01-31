@@ -1,79 +1,85 @@
-import React, { useState } from 'react';
-import { 
-  Container, 
-  Paper, 
-  Typography, 
-  TextField, 
-  Button, 
-  Box, 
-  FormControl, 
-  InputLabel, 
-  Select, 
-  MenuItem, 
+import AddBeneficiaryModal from "@/components/beneficiaries/AddBeneficiaryModal";
+import useUser from "@/hooks/useUser";
+import { Account } from "@/types/account";
+import axiosInstance from "@/utils/axios";
+import AddIcon from "@mui/icons-material/Add";
+import CompareArrowsIcon from "@mui/icons-material/CompareArrows";
+import DeleteIcon from "@mui/icons-material/Delete";
+import SendIcon from "@mui/icons-material/Send";
+import {
   Alert,
-  Grid,
+  Box,
+  Button,
   Card,
   CardContent,
+  Container,
+  FormControl,
+  Grid,
   IconButton,
-  Tooltip
-} from '@mui/material';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { useQuery, useMutation } from '@tanstack/react-query';
-import useUser from '@/hooks/useUser';
-import axiosInstance from '@/utils/axios';
-import { Account } from '@/types/account';
-import { Transaction } from '@/types/transaction';
-import { Beneficiary } from '@/types/beneficiary';
-import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
-import AddIcon from '@mui/icons-material/Add';
-import DeleteIcon from '@mui/icons-material/Delete';
-import SendIcon from '@mui/icons-material/Send';
-import AddBeneficiaryModal from '@/components/beneficiaries/AddBeneficiaryModal';
+  InputLabel,
+  MenuItem,
+  Paper,
+  Select,
+  TextField,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 
-export const Route = createFileRoute('/_authenticated/transfer')({
-  component: TransferPage
+export const Route = createFileRoute("/_authenticated/transfer")({
+  component: TransferPage,
 });
 
 function TransferPage() {
   const user = useUser();
-  const navigate = useNavigate();
-  const [transferType, setTransferType] = useState<'internal' | 'external' | 'beneficiary'>('internal');
-  const [sourceAccountId, setSourceAccountId] = useState<string>('');
-  const [destinationAccountId, setDestinationAccountId] = useState<string>('');
-  const [selectedBeneficiary, setSelectedBeneficiary] = useState<Beneficiary | null>(null);
-  const [destinationIban, setDestinationIban] = useState<string>('');
-  const [destinationName, setDestinationName] = useState<string>('');
-  const [amount, setAmount] = useState<string>('');
+  const [transferType, setTransferType] = useState<
+    "internal" | "external" | "beneficiary"
+  >("internal");
+  const [sourceAccountIban, setSourceAccountIban] = useState<string>("");
+  const [destinationAccountIban, setDestinationAccountIban] =
+    useState<string>("");
+  const [selectedBeneficiary, setSelectedBeneficiary] =
+    useState<Beneficiary | null>(null);
+  const [destinationIban, setDestinationIban] = useState<string>("");
+  const [destinationName, setDestinationName] = useState<string>("");
+  const [amount, setAmount] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [isAddBeneficiaryModalOpen, setIsAddBeneficiaryModalOpen] = useState(false);
+  const [isAddBeneficiaryModalOpen, setIsAddBeneficiaryModalOpen] =
+    useState(false);
 
   // Récupérer les comptes de l'utilisateur
   const { data: accounts, isLoading: isLoadingAccounts } = useQuery<Account[]>({
-    queryKey: ['accounts', user?.id],
+    queryKey: ["accounts", user?.id],
     queryFn: async () => {
       if (!user) return [];
       const response = await axiosInstance.get("/accounts");
       return response.data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Récupérer les bénéficiaires de l'utilisateur
-  const { data: beneficiaries, isLoading: isLoadingBeneficiaries } = useQuery<Beneficiary[]>({
-    queryKey: ['beneficiaries', user?.id],
+  const { data: beneficiaries, isLoading: isLoadingBeneficiaries } = useQuery<
+    Beneficiary[]
+  >({
+    queryKey: ["beneficiaries", user?.id],
     queryFn: async () => {
       if (!user) return [];
       const response = await axiosInstance.get("/beneficiaries");
       return response.data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Mutation pour supprimer un bénéficiaire
   const deleteBeneficiaryMutation = useMutation({
     mutationFn: async (beneficiaryId: string) => {
-      const response = await axiosInstance.delete(`/beneficiaries/${beneficiaryId}`);
+      const response = await axiosInstance.delete(
+        `/beneficiaries/${beneficiaryId}`
+      );
       return response.data;
     },
     onSuccess: () => {
@@ -81,50 +87,51 @@ function TransferPage() {
       // Le useQuery se chargera de mettre à jour automatiquement
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 
-                           error.response?.data?.message || 
-                           'Erreur lors de la suppression du bénéficiaire';
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Erreur lors de la suppression du bénéficiaire";
       setError(errorMessage);
-    }
+    },
   });
 
   // Mutation pour effectuer le virement
   const transferMutation = useMutation({
     mutationFn: async (transferData: {
-      source_account_id: string, 
-      destination_account_id?: string,
-      iban?: string,
-      name?: string,
-      amount: number
+      source_account_iban: string;
+      destination_account_iban?: string;
+      name?: string;
+      amount: number;
     }) => {
       try {
         const response = await axiosInstance.post("/send", transferData);
         return response.data;
       } catch (error: any) {
-        console.error('Transfer error:', error.response?.data);
+        console.error("Transfer error:", error.response?.data);
         throw error;
       }
     },
     onSuccess: () => {
-      setSuccess('Virement effectué avec succès !');
+      setSuccess("Virement effectué avec succès !");
       setError(null);
-      
+
       // Réinitialiser les champs
-      setSourceAccountId('');
-      setDestinationAccountId('');
+      setSourceAccountIban("");
+      setDestinationAccountIban("");
       setSelectedBeneficiary(null);
-      setDestinationIban('');
-      setDestinationName('');
-      setAmount('');
+      setDestinationIban("");
+      setDestinationName("");
+      setAmount("");
     },
     onError: (error: any) => {
-      const errorMessage = error.response?.data?.detail || 
-                           error.response?.data?.message || 
-                           'Erreur lors du virement';
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Erreur lors du virement";
       setError(errorMessage);
       setSuccess(null);
-      console.error('Transfer mutation error:', error);
-    }
+      console.error("Transfer mutation error:", error);
+    },
   });
 
   const handleAddBeneficiary = () => {
@@ -132,51 +139,54 @@ function TransferPage() {
   };
 
   const handleTransfer = () => {
-    // Validation de base
-    if (!sourceAccountId) {
-      setError('Veuillez sélectionner un compte source');
+    if (!sourceAccountIban) {
+      setError("Veuillez sélectionner un compte source");
       return;
     }
 
     const transferAmount = parseFloat(amount);
     if (isNaN(transferAmount) || transferAmount <= 0) {
-      setError('Montant invalide');
+      setError("Montant invalide");
       return;
     }
 
     // Trouver le compte source pour vérifier le solde
-    const sourceAccount = accounts?.find(acc => acc.id === sourceAccountId);
+    const sourceAccount = accounts?.find(
+      (acc) => acc.iban === sourceAccountIban
+    );
     if (!sourceAccount) {
-      setError('Compte source introuvable');
+      setError("Compte source introuvable");
       return;
     }
 
     if (transferAmount > sourceAccount.balance) {
-      setError(`Solde insuffisant. Votre solde actuel est de ${sourceAccount.balance.toFixed(2)} €`);
+      setError(
+        `Solde insuffisant. Votre solde actuel est de ${sourceAccount.balance.toFixed(2)} €`
+      );
       return;
     }
 
     // Validation spécifique selon le type de destination
     switch (transferType) {
-      case 'internal':
-        if (!destinationAccountId) {
-          setError('Veuillez sélectionner un compte destination');
+      case "internal":
+        if (!destinationAccountIban) {
+          setError("Veuillez sélectionner un compte destination");
           return;
         }
         break;
-      case 'beneficiary':
+      case "beneficiary":
         if (!selectedBeneficiary) {
-          setError('Veuillez sélectionner un bénéficiaire');
+          setError("Veuillez sélectionner un bénéficiaire");
           return;
         }
         break;
-      case 'external':
+      case "external":
         if (!destinationIban) {
-          setError('Veuillez saisir un IBAN');
+          setError("Veuillez saisir un IBAN");
           return;
         }
         if (!destinationName) {
-          setError('Veuillez saisir un nom de bénéficiaire');
+          setError("Veuillez saisir un nom de bénéficiaire");
           return;
         }
         break;
@@ -184,13 +194,14 @@ function TransferPage() {
 
     // Effectuer le virement
     transferMutation.mutate({
-      source_account_id: sourceAccountId,
-      destination_account_id: transferType === 'internal' ? destinationAccountId : 
-                               transferType === 'beneficiary' ? selectedBeneficiary?.account_id : undefined,
-      iban: transferType === 'external' ? destinationIban : undefined,
-      name: transferType === 'external' ? destinationName : 
-            transferType === 'beneficiary' ? selectedBeneficiary?.name : undefined,
-      amount: transferAmount
+      source_account_iban: sourceAccountIban,
+      destination_account_iban:
+        transferType === "internal"
+          ? destinationAccountIban
+          : transferType === "beneficiary"
+            ? selectedBeneficiary?.iban
+            : destinationIban,
+      amount: transferAmount,
     });
   };
 
@@ -199,7 +210,9 @@ function TransferPage() {
   };
 
   // Trouver le solde du compte source sélectionné
-  const selectedSourceAccount = accounts?.find(acc => acc.id === sourceAccountId);
+  const selectedSourceAccount = accounts?.find(
+    (acc) => acc.id === sourceAccountIban
+  );
 
   if (isLoadingAccounts || isLoadingBeneficiaries) {
     return <Typography>Chargement...</Typography>;
@@ -213,7 +226,7 @@ function TransferPage() {
     <Container maxWidth="lg">
       <Paper elevation={3} sx={{ p: 4, mt: 4 }}>
         <Typography variant="h4" gutterBottom>
-          <CompareArrowsIcon sx={{ mr: 2, verticalAlign: 'middle' }} />
+          <CompareArrowsIcon sx={{ mr: 2, verticalAlign: "middle" }} />
           Effectuer un virement
         </Typography>
 
@@ -231,19 +244,21 @@ function TransferPage() {
 
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <FormControl fullWidth>
                 <InputLabel>Type de virement</InputLabel>
                 <Select
                   value={transferType}
                   label="Type de virement"
                   onChange={(e) => {
-                    setTransferType(e.target.value as 'internal' | 'external' | 'beneficiary');
+                    setTransferType(
+                      e.target.value as "internal" | "external" | "beneficiary"
+                    );
                     // Réinitialiser les champs
-                    setDestinationAccountId('');
+                    setDestinationAccountIban("");
                     setSelectedBeneficiary(null);
-                    setDestinationIban('');
-                    setDestinationName('');
+                    setDestinationIban("");
+                    setDestinationName("");
                   }}
                 >
                   <MenuItem value="internal">Virement interne</MenuItem>
@@ -255,12 +270,12 @@ function TransferPage() {
               <FormControl fullWidth>
                 <InputLabel>Compte source</InputLabel>
                 <Select
-                  value={sourceAccountId}
+                  value={sourceAccountIban}
                   label="Compte source"
-                  onChange={(e) => setSourceAccountId(e.target.value)}
+                  onChange={(e) => setSourceAccountIban(e.target.value)}
                 >
                   {accounts.map((account) => (
-                    <MenuItem key={account.id} value={account.id}>
+                    <MenuItem key={account.id} value={account.iban}>
                       {account.name} - Solde: {account.balance.toFixed(2)} €
                     </MenuItem>
                   ))}
@@ -273,19 +288,19 @@ function TransferPage() {
                 </Typography>
               )}
 
-              {transferType === 'internal' && (
+              {transferType === "internal" && (
                 <FormControl fullWidth>
                   <InputLabel>Compte destination</InputLabel>
                   <Select
-                    value={destinationAccountId}
+                    value={destinationAccountIban}
                     label="Compte destination"
-                    onChange={(e) => setDestinationAccountId(e.target.value)}
+                    onChange={(e) => setDestinationAccountIban(e.target.value)}
                   >
                     {accounts.map((account) => (
-                      <MenuItem 
-                        key={account.id} 
-                        value={account.id} 
-                        disabled={account.id === sourceAccountId}
+                      <MenuItem
+                        key={account.id}
+                        value={account.id}
+                        disabled={account.id === sourceAccountIban}
                       >
                         {account.name} - Solde: {account.balance.toFixed(2)} €
                       </MenuItem>
@@ -294,7 +309,7 @@ function TransferPage() {
                 </FormControl>
               )}
 
-              {transferType === 'external' && (
+              {transferType === "external" && (
                 <>
                   <TextField
                     fullWidth
@@ -314,11 +329,11 @@ function TransferPage() {
                 </>
               )}
 
-              {transferType === 'beneficiary' && (
+              {transferType === "beneficiary" && (
                 <Box>
-                  <Button 
-                    variant="outlined" 
-                    color="primary" 
+                  <Button
+                    variant="outlined"
+                    color="primary"
                     startIcon={<AddIcon />}
                     onClick={handleAddBeneficiary}
                     sx={{ mb: 2 }}
@@ -327,45 +342,52 @@ function TransferPage() {
                   </Button>
                   {beneficiaries && beneficiaries.length > 0 ? (
                     beneficiaries.map((beneficiary) => (
-                      <Card 
-                        key={beneficiary.id} 
-                        sx={{ 
-                          mb: 2, 
-                          backgroundColor: selectedBeneficiary?.id === beneficiary.id 
-                            ? 'primary.light' 
-                            : 'background.paper' 
+                      <Card
+                        key={beneficiary.id}
+                        sx={{
+                          mb: 2,
+                          backgroundColor:
+                            selectedBeneficiary?.id === beneficiary.id
+                              ? "primary.light"
+                              : "background.paper",
                         }}
                       >
-                        <CardContent sx={{ 
-                          display: 'flex', 
-                          justifyContent: 'space-between', 
-                          alignItems: 'center' 
-                        }}>
+                        <CardContent
+                          sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                          }}
+                        >
                           <Box>
                             <Typography variant="body1" fontWeight="bold">
                               {beneficiary.name}
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                              Compte : {beneficiary.account_id}
+                              Compte : {beneficiary.iban}
                             </Typography>
                           </Box>
                           <Box>
                             <Tooltip title="Sélectionner ce bénéficiaire">
-                              <Button 
-                                variant="outlined" 
-                                color="primary" 
+                              <Button
+                                variant="outlined"
+                                color="primary"
                                 size="small"
-                                onClick={() => setSelectedBeneficiary(beneficiary)}
+                                onClick={() =>
+                                  setSelectedBeneficiary(beneficiary)
+                                }
                                 sx={{ mr: 1 }}
                               >
                                 <SendIcon />
                               </Button>
                             </Tooltip>
                             <Tooltip title="Supprimer le bénéficiaire">
-                              <IconButton 
-                                color="error" 
+                              <IconButton
+                                color="error"
                                 size="small"
-                                onClick={() => handleDeleteBeneficiary(beneficiary.id)}
+                                onClick={() =>
+                                  handleDeleteBeneficiary(beneficiary.id)
+                                }
                               >
                                 <DeleteIcon />
                               </IconButton>
@@ -389,37 +411,41 @@ function TransferPage() {
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 InputProps={{
-                  endAdornment: <Typography variant="body2">€</Typography>
+                  endAdornment: <Typography variant="body2">€</Typography>,
                 }}
                 inputProps={{
                   min: 0,
-                  step: 0.01
+                  step: 0.01,
                 }}
               />
 
-              <Button 
-                variant="contained" 
-                color="primary" 
+              <Button
+                variant="contained"
+                color="primary"
                 onClick={handleTransfer}
                 fullWidth
                 disabled={
-                  transferMutation.isLoading || 
-                  !sourceAccountId || 
-                  !amount || 
+                  transferMutation.isPending ||
+                  !sourceAccountIban ||
+                  !amount ||
                   parseFloat(amount) <= 0 ||
-                  (transferType === 'internal' && !destinationAccountId) ||
-                  (transferType === 'external' && (!destinationIban || !destinationName)) ||
-                  (transferType === 'beneficiary' && !selectedBeneficiary) ||
-                  (selectedSourceAccount && parseFloat(amount) > selectedSourceAccount.balance)
+                  (transferType === "internal" && !destinationAccountIban) ||
+                  (transferType === "external" &&
+                    (!destinationIban || !destinationName)) ||
+                  (transferType === "beneficiary" && !selectedBeneficiary) ||
+                  (selectedSourceAccount &&
+                    parseFloat(amount) > selectedSourceAccount.balance)
                 }
               >
-                {transferMutation.isLoading ? 'Virement en cours...' : 'Effectuer le virement'}
+                {transferMutation.isPending
+                  ? "Virement en cours..."
+                  : "Effectuer le virement"}
               </Button>
             </Box>
           </Grid>
 
           {/* Section des bénéficiaires */}
-          {transferType === 'beneficiary' && (
+          {transferType === "beneficiary" && (
             <Grid item xs={12} md={6}>
               <Typography variant="h6" gutterBottom>
                 Mes bénéficiaires
@@ -432,7 +458,7 @@ function TransferPage() {
                         {beneficiary.name}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        Compte : {beneficiary.account_id}
+                        Compte : {beneficiary.iban}
                       </Typography>
                     </CardContent>
                   </Card>
@@ -448,7 +474,7 @@ function TransferPage() {
       </Paper>
 
       {/* Modal d'ajout de bénéficiaire */}
-      <AddBeneficiaryModal 
+      <AddBeneficiaryModal
         open={isAddBeneficiaryModalOpen}
         onClose={() => setIsAddBeneficiaryModalOpen(false)}
       />

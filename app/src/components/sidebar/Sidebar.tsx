@@ -1,11 +1,6 @@
-import React from 'react';
-import { 
-  Drawer, 
-  Typography, 
-  Box 
-} from '@mui/material';
-import NavLinks from './NavLinks';
-import ProfileButton from './ProfileButton';
+import { Box, Drawer, Typography } from "@mui/material";
+import NavLinks from "./NavLinks";
+import ProfileButton from "./ProfileButton";
 
 export default function Sidebar() {
   return (
@@ -14,33 +9,35 @@ export default function Sidebar() {
       sx={{
         width: 240,
         flexShrink: 0,
-        '& .MuiDrawer-paper': {
+        "& .MuiDrawer-paper": {
           width: 240,
-          boxSizing: 'border-box',
+          boxSizing: "border-box",
         },
       }}
     >
-      <Box sx={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        height: '100%',
-        justifyContent: 'space-between'
-      }}>
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          height: "100%",
+          justifyContent: "space-between",
+        }}
+      >
         <Box>
-          <Typography 
-            variant="h6" 
-            sx={{ 
-              p: 2, 
-              textAlign: 'center',
-              fontWeight: 'bold'
+          <Typography
+            variant="h6"
+            sx={{
+              p: 2,
+              textAlign: "center",
+              fontWeight: "bold",
             }}
           >
             🏦 CodyBank
           </Typography>
           <NavLinks />
         </Box>
-        
-        <Box sx={{ p: 2 }}>
+
+        <Box>
           <ProfileButton />
         </Box>
       </Box>

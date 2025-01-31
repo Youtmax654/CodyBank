@@ -1,12 +1,15 @@
 from uuid import UUID
 from fastapi import APIRouter, Depends
+from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from passlib.hash import pbkdf2_sha256
 import jwt
 from api.core.db import get_session
 from api.schemas.user import UpdatePasswordBody, UpdateProfileBody, UserResponse
 from api.models.User import User
 from fastapi import HTTPException
 from api.core.config import algorithm, secret_key
+
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()

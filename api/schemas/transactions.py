@@ -6,8 +6,8 @@ from pydantic import BaseModel, Field, UUID4
 
 
 class SendMoney(BaseModel):
-    source_account_id: UUID4
-    destination_account_id: UUID4
+    source_account_iban: str
+    destination_account_iban: str
     amount: float = Field(gt=0, description="Amount must be greater than 0")
 
 
@@ -23,4 +23,4 @@ class TransactionResponse(BaseModel):
     destination_account_id: Optional[UUID4] = None
     type: str
     status: str
-    created_at: Optional[str] = None
+    created_at: datetime

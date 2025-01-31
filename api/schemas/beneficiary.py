@@ -5,13 +5,12 @@ from datetime import datetime
 
 
 class BeneficiaryBody(BaseModel):
-    user_id: UUID
-    account_id: UUID
+    iban: str
     name: str
 
 
 class BeneficiaryUpdateBody(BaseModel):
-    account_id: Optional[UUID] = None
+    iban: Optional[str] = None
     name: Optional[str] = None
 
 
@@ -19,5 +18,5 @@ class BeneficiaryResponse(BaseModel):
     id: UUID
     name: str
     user_id: UUID
-    account_id: UUID
+    iban: str
     created_at: datetime
