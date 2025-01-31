@@ -22,13 +22,12 @@ def update_account_balance(session: Session, account: Account, amount: float):
 
 def create_transaction(
     session: Session,
-    destination_account_id: UUID,
-    amount: float,
     source_account_id: Optional[UUID] = None,
+    amount: float = 0,
+    destination_account_id: Optional[UUID] = None,
     type: TransactionType = TransactionType.TRANSFER,
     status: TransactionStatus = TransactionStatus.PENDING,
 ):
-
     transaction = Transaction(
         source_account_id=source_account_id,
         destination_account_id=destination_account_id,
