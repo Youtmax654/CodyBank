@@ -87,7 +87,27 @@ function TransferPage() {
       const errorMessage =
         error.response?.data?.detail ||
         error.response?.data?.message ||
-        "Erreur lors de la suppression du bénéficiaire";
+        "Erreur lors de la suppression du beneficiare";
+      toast.error(errorMessage);
+    },
+  });
+
+  // Mutation pour annuler un virement
+  const cancelTransferMutation = useMutation({
+    mutationFn: async (transactionId: string) => {
+      const response = await axiosInstance.put(
+        `/transactions/${transactionId}/cancel`
+      );
+      return response.data;
+    },
+    onSuccess: () => {
+      toast.success("Virement annulé avec succès");
+    },
+    onError: (error: any) => {
+      const errorMessage =
+        error.response?.data?.detail ||
+        error.response?.data?.message ||
+        "Erreur lors de l'annulation du virement";
       toast.error(errorMessage);
     },
   });
@@ -108,8 +128,46 @@ function TransferPage() {
         throw error;
       }
     },
-    onSuccess: () => {
-      toast.success("Virement effectué avec succès !");
+    onSuccess: (data) => {
+      // Créer un toast personnalisé avec un bouton d'annulation
+      toast.custom(
+        (t) => (
+          <Box
+            sx={{
+              maxWidth: 400,
+              p: 2,
+              bgcolor: "background.paper",
+              borderRadius: 1,
+              boxShadow: 3,
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+            }}
+          >
+            <Box sx={{ flex: 1 }}>
+              <Typography variant="body1" sx={{ fontWeight: "bold", mb: 0.5 }}>
+                Virement effectué avec succès !
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Cliquez ici pour annuler
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={() => {
+                cancelTransferMutation.mutate(data.id);
+                toast.dismiss(t.id);
+              }}
+            >
+              Annuler
+            </Button>
+          </Box>
+        ),
+        {
+          duration: 5000, // 5 secondes
+        }
+      );
 
       // Réinitialiser les champs
       setSourceAccountIban("");
