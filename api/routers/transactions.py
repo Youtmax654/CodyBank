@@ -81,7 +81,62 @@ def send_money(body: SendMoney, session=Depends(get_session)) -> TransactionResp
         destination_account.id,
         body.amount,
         source_account.id,
+        TransactionType.TRANSFER,
+        TransactionStatus.CONFIRMED,
     )
+
+    return transaction
+
+
+@router.post("/transfer")
+def transfer_money(
+    body: SendMoney, 
+    session=Depends(get_session),
+    authorization: HTTPAuthorizationCredentials = Depends(bearer_scheme)
+) -> TransactionResponse:
+    # Vérifier que les comptes source et destination sont différents
+    if body.source_account_id == body.destination_account_id:
+        raise HTTPException(status_code=400, detail="Source and destination accounts must be different")
+
+    # Vérifier que le montant est positif
+    if body.amount <= 0:
+        raise HTTPException(status_code=400, detail="Amount must be greater than 0")
+
+    # Récupérer les comptes source et destination
+    source_account = get_account_by_id(session, body.source_account_id)
+    destination_account = get_account_by_id(session, body.destination_account_id)
+
+    # Vérifier que les comptes existent
+    if not source_account:
+        raise HTTPException(status_code=404, detail="Source account not found")
+    if not destination_account:
+        raise HTTPException(status_code=404, detail="Destination account not found")
+
+    # Vérifier que les comptes sont actifs
+    if not source_account.is_active or not destination_account.is_active:
+        raise HTTPException(status_code=403, detail="One or both accounts are inactive")
+
+    # Vérifier que le compte source a suffisamment de fonds
+    if source_account.balance < body.amount:
+        raise HTTPException(status_code=400, detail=f"Insufficient funds. Current balance: {source_account.balance}")
+
+    # Créer une transaction de transfert
+    transaction = create_transaction(
+        session,
+        body.source_account_id,
+        body.amount,
+        body.destination_account_id,
+        TransactionType.TRANSFER,
+        TransactionStatus.PENDING
+    )
+
+    # Mettre à jour les soldes des comptes
+    update_account_balance(session, source_account, -body.amount)
+    update_account_balance(session, destination_account, body.amount)
+
+    # Confirmer la transaction
+    transaction.status = TransactionStatus.CONFIRMED
+    session.commit()
 
     return transaction
 
