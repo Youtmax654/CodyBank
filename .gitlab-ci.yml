@@ -1,0 +1,47 @@
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - lint
+  - sast
+  - test
+  - build
+  - deploy
+
+variables:
+  IMAGE_NAME: "registry.gitlab.com/codybank/CodyBank"
+  IMAGE_TAG: "latest"
+
+before_script:
+  - 
+
+lint:
+  stage: lint
+  script:
+    - echo "🔍 Lint du code en cours..."
+
+sast:
+  stage: sast
+  image: ****
+  script:
+    - echo "🛡️ Analyse statique du code (SAST) en cours..."
+
+test:
+  stage: test
+  script:
+    - echo "🧪 Exécution des tests unitaires et d’intégration..."
+
+build:  
+  stage: build
+  script:
+    - echo "📦 Construction de l’image Docker..."
+
+deploy:
+  stage: deploy
+  script:
+    - echo "🚀 Déploiement en production..."
+
+***RULES***: 
+	- 
