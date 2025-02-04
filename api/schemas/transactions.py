@@ -1,7 +1,5 @@
 from datetime import datetime
 from typing import Optional
-from uuid import UUID
-from api.models.Transaction import TransactionStatus, TransactionType
 from pydantic import BaseModel, Field, UUID4
 
 

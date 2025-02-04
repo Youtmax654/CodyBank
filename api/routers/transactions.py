@@ -1,18 +1,18 @@
 from datetime import datetime, timedelta
 from uuid import UUID
-from api.services.account_service import get_accounts_by_transaction_id
+from services.account_service import get_accounts_by_transaction_id
 from fastapi import APIRouter, Depends, HTTPException
-from api.core.config import algorithm, secret_key, pending_transactions_interval
+from core.config import algorithm, secret_key, pending_transactions_interval
 import jwt
-from api.models.Transaction import Transaction, TransactionStatus, TransactionType
-from api.core.db import get_session
+from models.Transaction import Transaction, TransactionStatus, TransactionType
+from core.db import get_session
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from api.schemas.transactions import (
+from schemas.transactions import (
     DepositBody,
     SendMoney,
     TransactionResponse,
 )
-from api.services.transaction_service import (
+from services.transaction_service import (
     create_transaction,
     get_account_by_iban,
     get_account_by_id,
@@ -39,9 +39,9 @@ def deposit(body: DepositBody, session=Depends(get_session)) -> TransactionRespo
     update_account_balance(session, account, body.amount)
     transaction = create_transaction(
         session,
-        account.id,
-        body.amount,
         None,
+        body.amount,
+        account.id,
         TransactionType.DEPOSIT,
         TransactionStatus.CONFIRMED,
     )

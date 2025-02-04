@@ -1,22 +1,22 @@
-import { useState, useEffect, useCallback } from "react";
+import useUser from "@/hooks/useUser";
+import { Account } from "@/types/account";
+import { Transaction } from "@/types/transaction";
+import axiosInstance from "@/utils/axios";
 import {
   Box,
   Card,
   CardContent,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Grid,
   Chip,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { Transaction } from "@/types/transaction";
-import { Account } from "@/types/account";
-import useUser from "@/hooks/useUser";
-import axiosInstance from "@/utils/axios";
-import axios from 'axios';
+import axios from "axios";
+import { useCallback, useEffect, useState } from "react";
 
 interface TransactionListProps {
   accounts: Account[];
@@ -25,7 +25,9 @@ interface TransactionListProps {
 export default function TransactionList({ accounts }: TransactionListProps) {
   const user = useUser();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<string>(accounts[0]?.id || "");
+  const [selectedAccount, setSelectedAccount] = useState<string>(
+    accounts[0]?.id || ""
+  );
   const [transactionType, setTransactionType] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(false);
@@ -39,36 +41,40 @@ export default function TransactionList({ accounts }: TransactionListProps) {
 
     setLoading(true);
     setError(null);
-    
+
     try {
       console.log("Fetching transactions for account:", selectedAccount);
-      
+
       // Utiliser le endpoint pour un compte spécifique
       const response = await axiosInstance.get("/transactions", {
-        params: { account_id: selectedAccount }
+        params: { account_id: selectedAccount },
       });
-      
+
       console.log("API Response:", {
         status: response.status,
         data: response.data,
-        headers: response.headers
+        headers: response.headers,
       });
-      
-      const transactionsArray = Array.isArray(response.data) ? response.data : [];
+
+      const transactionsArray = Array.isArray(response.data)
+        ? response.data
+        : [];
       console.log("Parsed transactions:", transactionsArray);
       setTransactions(transactionsArray);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.detail || "Erreur lors de la récupération des transactions";
+        const errorMessage =
+          error.response?.data?.detail ||
+          "Erreur lors de la récupération des transactions";
         console.error("Error details:", {
           status: error.response?.status,
           data: error.response?.data,
           config: {
             url: error.config?.url,
             method: error.config?.method,
-            headers: error.config?.headers
-          }
+            headers: error.config?.headers,
+          },
         });
         setError(errorMessage);
       } else {
@@ -85,16 +91,6 @@ export default function TransactionList({ accounts }: TransactionListProps) {
       fetchTransactions();
     }
   }, [user, fetchTransactions]);
-
-  const handleAccountChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newValue = event.target.value;
-    console.log("Changing selected account to:", newValue);
-    setSelectedAccount(newValue);
-  };
-
-  const handleTransactionTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setTransactionType(event.target.value);
-  };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
@@ -134,7 +130,7 @@ export default function TransactionList({ accounts }: TransactionListProps) {
   };
 
   const getAccountName = (accountId: string) => {
-    const account = accounts.find(a => a.id === accountId);
+    const account = accounts.find((a) => a.id === accountId);
     return account?.name || accountId;
   };
 
@@ -143,7 +139,11 @@ export default function TransactionList({ accounts }: TransactionListProps) {
       <Box sx={{ mb: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
         <FormControl sx={{ minWidth: 200 }}>
           <InputLabel>Compte</InputLabel>
-          <Select value={selectedAccount} onChange={handleAccountChange} label="Compte">
+          <Select
+            value={selectedAccount}
+            onChange={(e) => setSelectedAccount(e.target.value as string)}
+            label="Compte"
+          >
             {accounts.map((account) => (
               <MenuItem key={account.id} value={account.id}>
                 {account.name || account.id}
@@ -156,7 +156,7 @@ export default function TransactionList({ accounts }: TransactionListProps) {
           <InputLabel>Type de transaction</InputLabel>
           <Select
             value={transactionType}
-            onChange={handleTransactionTypeChange}
+            onChange={(e) => setTransactionType(e.target.value as string)}
             label="Type de transaction"
           >
             <MenuItem value="all">Toutes les transactions</MenuItem>
@@ -217,7 +217,9 @@ export default function TransactionList({ accounts }: TransactionListProps) {
                 </Grid>
                 <Grid item xs={12} sm={4}>
                   <Chip
-                    label={transaction.source_account_id ? "Dépense" : "Recette"}
+                    label={
+                      transaction.source_account_id ? "Dépense" : "Recette"
+                    }
                     color={getTransactionColor(transaction)}
                     sx={{ fontWeight: "bold" }}
                   />

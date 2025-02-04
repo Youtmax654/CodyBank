@@ -1,30 +1,36 @@
-import { useState, useEffect, useCallback } from "react";
+import useUser from "@/hooks/useUser";
+import { Account } from "@/types/account";
+import { Transaction } from "@/types/transaction";
+import axiosInstance from "@/utils/axios";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
 import {
   Box,
+  Button,
   Card,
   CardContent,
-  Typography,
-  TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Grid,
   Chip,
-  Button,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  DialogTitle,
+  FormControl,
+  Grid,
+  InputLabel,
+  MenuItem,
+  Select,
+  TextField,
+  Typography,
 } from "@mui/material";
-import { Transaction } from "@/types/transaction";
-import { Account } from "@/types/account";
-import useUser from "@/hooks/useUser";
-import axiosInstance from "@/utils/axios";
-import axios from 'axios';
-import { format, parseISO, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import axios from "axios";
+import {
+  endOfMonth,
+  format,
+  isWithinInterval,
+  parseISO,
+  startOfMonth,
+} from "date-fns";
+import { fr } from "date-fns/locale";
+import { useCallback, useEffect, useState } from "react";
 
 interface TransactionListProps {
   accounts: Account[];
@@ -33,12 +39,16 @@ interface TransactionListProps {
 export default function TransactionList({ accounts }: TransactionListProps) {
   const user = useUser();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-  const [selectedAccount, setSelectedAccount] = useState<string>(accounts[0]?.id || "");
+  const [selectedAccount, setSelectedAccount] = useState<string>(
+    accounts[0]?.id || ""
+  );
   const [transactionType, setTransactionType] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMonth, setSelectedMonth] = useState<string>(format(new Date(), 'yyyy-MM'));
+  const [selectedMonth, setSelectedMonth] = useState<string>(
+    format(new Date(), "yyyy-MM")
+  );
   const [downloadDialogOpen, setDownloadDialogOpen] = useState(false);
 
   const fetchTransactions = useCallback(async () => {
@@ -49,18 +59,22 @@ export default function TransactionList({ accounts }: TransactionListProps) {
 
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await axiosInstance.get("/transactions", {
-        params: { account_id: selectedAccount }
+        params: { account_id: selectedAccount },
       });
-      
-      const transactionsArray = Array.isArray(response.data) ? response.data : [];
+
+      const transactionsArray = Array.isArray(response.data)
+        ? response.data
+        : [];
       setTransactions(transactionsArray);
     } catch (error) {
       console.error("Error fetching transactions:", error);
       if (axios.isAxiosError(error)) {
-        const errorMessage = error.response?.data?.detail || "Erreur lors de la récupération des transactions";
+        const errorMessage =
+          error.response?.data?.detail ||
+          "Erreur lors de la récupération des transactions";
         setError(errorMessage);
       } else {
         setError("Erreur lors de la récupération des transactions");
@@ -77,29 +91,19 @@ export default function TransactionList({ accounts }: TransactionListProps) {
     }
   }, [user, fetchTransactions]);
 
-  const handleAccountChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedAccount(event.target.value);
-  };
-
-  const handleTransactionTypeChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setTransactionType(event.target.value);
-  };
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(event.target.value);
   };
 
-  const handleMonthChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedMonth(event.target.value);
-  };
-
   const filteredTransactions = transactions.filter((transaction) => {
     const transactionDate = parseISO(transaction.created_at);
-    const monthStart = startOfMonth(parseISO(selectedMonth + '-01'));
-    const monthEnd = endOfMonth(parseISO(selectedMonth + '-01'));
+    const monthStart = startOfMonth(parseISO(selectedMonth + "-01"));
+    const monthEnd = endOfMonth(parseISO(selectedMonth + "-01"));
 
     // Filter by month
-    if (!isWithinInterval(transactionDate, { start: monthStart, end: monthEnd })) {
+    if (
+      !isWithinInterval(transactionDate, { start: monthStart, end: monthEnd })
+    ) {
       return false;
     }
 
@@ -124,57 +128,69 @@ export default function TransactionList({ accounts }: TransactionListProps) {
 
   const handleDownloadStatement = () => {
     // Générer un fichier CSV des transactions
-    const selectedMonthFormatted = format(parseISO(selectedMonth + '-01'), 'MMMM yyyy', { locale: fr });
-    
+    const selectedMonthFormatted = format(
+      parseISO(selectedMonth + "-01"),
+      "MMMM yyyy",
+      { locale: fr }
+    );
+
     // Préparer les en-têtes du CSV
     const headers = [
-      'Date', 
-      'Type', 
-      'Statut', 
-      'Montant', 
-      'Compte de destination', 
-      'Compte source'
+      "Date",
+      "Type",
+      "Statut",
+      "Montant",
+      "Compte de destination",
+      "Compte source",
     ];
 
     // Convertir les transactions filtrées en lignes CSV
-    const csvLines = filteredTransactions.map(transaction => {
+    const csvLines = filteredTransactions.map((transaction) => {
       // Vérifier et fournir des valeurs par défaut
       const safeTransaction = {
-        created_at: transaction.created_at || '',
-        type: transaction.type || 'N/A',
-        status: transaction.status || 'N/A',
+        created_at: transaction.created_at || "",
+        type: transaction.type || "N/A",
+        status: transaction.status || "N/A",
         amount: transaction.amount !== undefined ? transaction.amount : 0,
-        destination_account_id: transaction.destination_account_id || 'N/A',
-        source_account_id: transaction.source_account_id || ''
+        destination_account_id: transaction.destination_account_id || "N/A",
+        source_account_id: transaction.source_account_id || "",
       };
 
       return [
-        format(parseISO(safeTransaction.created_at), 'dd/MM/yyyy'),
+        format(parseISO(safeTransaction.created_at), "dd/MM/yyyy"),
         safeTransaction.type,
         safeTransaction.status,
-        (safeTransaction.source_account_id ? '-' : '+') + safeTransaction.amount.toFixed(2),
+        (safeTransaction.source_account_id ? "-" : "+") +
+          safeTransaction.amount.toFixed(2),
         getAccountName(safeTransaction.destination_account_id),
-        safeTransaction.source_account_id ? getAccountName(safeTransaction.source_account_id) : 'N/A'
+        safeTransaction.source_account_id
+          ? getAccountName(safeTransaction.source_account_id)
+          : "N/A",
       ];
     });
 
     // Créer le contenu CSV
     const csvContent = [
-      headers.join(','),
-      ...csvLines.map(line => line.map(cell => 
-        // Échapper les virgules et les guillemets, et gérer les undefined
-        `"${(cell ?? '').toString().replace(/"/g, '""')}"`
-      ).join(','))
-    ].join('\n');
+      headers.join(","),
+      ...csvLines.map((line) =>
+        line
+          .map(
+            (cell) =>
+              // Échapper les virgules et les guillemets, et gérer les undefined
+              `"${(cell ?? "").toString().replace(/"/g, '""')}"`
+          )
+          .join(",")
+      ),
+    ].join("\n");
 
     // Créer un Blob et télécharger
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const link = document.createElement('a');
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
-    
-    link.setAttribute('href', url);
-    link.setAttribute('download', `Relevé_${selectedMonthFormatted}.csv`);
-    link.style.visibility = 'hidden';
+
+    link.setAttribute("href", url);
+    link.setAttribute("download", `Relevé_${selectedMonthFormatted}.csv`);
+    link.style.visibility = "hidden";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -190,27 +206,40 @@ export default function TransactionList({ accounts }: TransactionListProps) {
   };
 
   const formatDate = (date: string) => {
-    return format(parseISO(date), 'dd MMMM yyyy', { locale: fr });
+    return format(parseISO(date), "dd MMMM yyyy", { locale: fr });
   };
 
   const getAccountName = (accountId: string) => {
-    const account = accounts.find(a => a.id === accountId);
+    const account = accounts.find((a) => a.id === accountId);
     return account?.name || accountId;
   };
 
   // Générer la liste des mois pour le sélecteur
   const monthOptions = Array.from({ length: 12 }, (_, i) => {
     const date = new Date(new Date().getFullYear(), i, 1);
-    return format(date, 'yyyy-MM');
+    return format(date, "yyyy-MM");
   });
 
   return (
     <Box>
-      <Box sx={{ mb: 2, display: "flex", gap: 2, flexWrap: "wrap", justifyContent: "space-between", alignItems: "center" }}>
+      <Box
+        sx={{
+          mb: 2,
+          display: "flex",
+          gap: 2,
+          flexWrap: "wrap",
+          justifyContent: "space-between",
+          alignItems: "center",
+        }}
+      >
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <FormControl sx={{ minWidth: 200 }}>
             <InputLabel>Compte</InputLabel>
-            <Select value={selectedAccount} onChange={handleAccountChange} label="Compte">
+            <Select
+              value={selectedAccount}
+              onChange={(e) => setSelectedAccount(e.target.value as string)}
+              label="Compte"
+            >
               {accounts.map((account) => (
                 <MenuItem key={account.id} value={account.id}>
                   {account.name || account.id}
@@ -223,7 +252,7 @@ export default function TransactionList({ accounts }: TransactionListProps) {
             <InputLabel>Type de transaction</InputLabel>
             <Select
               value={transactionType}
-              onChange={handleTransactionTypeChange}
+              onChange={(e) => setTransactionType(e.target.value as string)}
               label="Type de transaction"
             >
               <MenuItem value="all">Toutes les transactions</MenuItem>
@@ -246,20 +275,20 @@ export default function TransactionList({ accounts }: TransactionListProps) {
             <InputLabel>Mois</InputLabel>
             <Select
               value={selectedMonth}
-              onChange={handleMonthChange}
+              onChange={(e) => setSelectedMonth(e.target.value as string)}
               label="Mois"
             >
               {monthOptions.map((month) => (
                 <MenuItem key={month} value={month}>
-                  {format(parseISO(month + '-01'), 'MMMM yyyy', { locale: fr })}
+                  {format(parseISO(month + "-01"), "MMMM yyyy", { locale: fr })}
                 </MenuItem>
               ))}
             </Select>
           </FormControl>
 
-          <Button 
-            variant="contained" 
-            color="primary" 
+          <Button
+            variant="contained"
+            color="primary"
             startIcon={<FileDownloadIcon />}
             onClick={() => setDownloadDialogOpen(true)}
           >
@@ -312,14 +341,18 @@ export default function TransactionList({ accounts }: TransactionListProps) {
                   )}
                 </Grid>
                 <Grid item xs={12} sm={4} sx={{ textAlign: "right" }}>
-                  <Typography variant="h6" color={transaction.source_account_id ? "error" : "success"}>
+                  <Typography
+                    variant="h6"
+                    color={transaction.source_account_id ? "error" : "success"}
+                  >
                     {transaction.source_account_id ? "-" : "+"}
                     {transaction.amount.toFixed(2)} €
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
                   <Typography variant="body2" color="text.secondary">
-                    Compte : {getAccountName(transaction.destination_account_id)}
+                    Compte :{" "}
+                    {getAccountName(transaction.destination_account_id)}
                   </Typography>
                   {transaction.source_account_id && (
                     <Typography variant="body2" color="text.secondary">
@@ -337,7 +370,11 @@ export default function TransactionList({ accounts }: TransactionListProps) {
         <DialogTitle>Télécharger le relevé</DialogTitle>
         <DialogContent>
           <Typography>
-            Voulez-vous télécharger le relevé pour {format(parseISO(selectedMonth + '-01'), 'MMMM yyyy', { locale: fr })} ?
+            Voulez-vous télécharger le relevé pour{" "}
+            {format(parseISO(selectedMonth + "-01"), "MMMM yyyy", {
+              locale: fr,
+            })}{" "}
+            ?
           </Typography>
         </DialogContent>
         <DialogActions>

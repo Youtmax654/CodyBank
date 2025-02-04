@@ -28,6 +28,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import toast from "react-hot-toast";
 
+type Beneficiary = {
+  id: string;
+  name: string;
+  iban: string;
+};
+
 export const Route = createFileRoute("/_authenticated/transfer")({
   component: TransferPage,
 });

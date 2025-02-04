@@ -1,12 +1,12 @@
-from api.routers import auth, accounts, beneficiaries, transactions, users
-from api.models.Transaction import Transaction, TransactionStatus
+from routers import auth, accounts, beneficiaries, transactions, users
+from models.Transaction import Transaction, TransactionStatus
 from fastapi_utilities import repeat_every
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from api.core.db import create_db_and_tables, get_session
-from api.core.config import pending_transactions_interval
-from api.services.transaction_service import (
+from core.db import create_db_and_tables, get_session
+from core.config import pending_transactions_interval
+from services.transaction_service import (
     get_account_by_id,
 )
 from datetime import datetime, timedelta
@@ -23,6 +23,7 @@ app.add_middleware(
     allow_methods=["*"],  # Permet toutes les méthodes HTTP
     allow_headers=["*"],  # Permet tous les headers
 )
+
 
 @app.on_event("startup")
 @repeat_every(seconds=10)

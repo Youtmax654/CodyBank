@@ -2,9 +2,9 @@ from datetime import datetime, timedelta
 from uuid import UUID
 from typing import Optional
 from sqlalchemy.orm import Session
-from api.models.Transaction import Transaction, TransactionStatus, TransactionType
-from api.models.Account import Account
-from api.core.config import pending_transactions_interval
+from models.Transaction import Transaction, TransactionStatus, TransactionType
+from models.Account import Account
+from core.config import pending_transactions_interval
 
 
 def get_account_by_id(session: Session, account_id: UUID) -> Account:

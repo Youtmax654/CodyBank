@@ -1,8 +1,8 @@
 from uuid import UUID
 
 from fastapi import HTTPException
-from api.models.Account import Account
-from api.models.Transaction import Transaction
+from models.Account import Account
+from models.Transaction import Transaction
 from sqlalchemy.orm import Session
 
 

@@ -1,12 +1,15 @@
 {
   "scripts": {
     "init": "npm run init:api && npm run init:app",
-    "init:api": "cd api && python -m venv venv && venv\\Scripts\\activate && pip install fastapi[standard] fastapi_utilities passlib sqlmodel pyjwt",
+    "init:api": "cd api && python -m venv venv && venv\\Scripts\\activate && pip install fastapi[standard] fastapi_utilities passlib sqlmodel pyjwt pytest && cd ..",
     "init:mac": "npm run init:api:mac && npm run init:app",
-    "init:api:mac": "cd api && python3 -m venv venv && source venv/bin/activate && pip3 install fastapi[standard] fastapi_utilities passlib sqlmodel pyjwt",
+    "init:api:mac": "cd api && python3 -m venv venv && source venv/bin/activate && pip3 install fastapi[standard] fastapi_utilities passlib sqlmodel pyjwt pytest && cd ..",
     "init:app": "cd app && npm install",
     "api": "cd api && source venv/bin/activate || venv\\Scripts\\activate && fastapi dev main.py",
-    "app": "cd app && npm run dev"
+    "app": "cd app && npm run dev",
+    "test": "npm run test:api && npm run test:app",
+    "test:api": "cd api && source venv/bin/activate || venv\\Scripts\\activate && pytest",
+    "test:app": "echo \"No app tests implemented yet\""
   },
   "dependencies": {
     "@mui/icons-material": "^6.4.2",

@@ -4,11 +4,11 @@ from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from passlib.hash import pbkdf2_sha256
 import jwt
-from api.core.db import get_session
-from api.schemas.user import UpdatePasswordBody, UpdateProfileBody, UserResponse
-from api.models.User import User
+from core.db import get_session
+from schemas.user import UpdatePasswordBody, UpdateProfileBody, UserResponse
+from models.User import User
 from fastapi import HTTPException
-from api.core.config import algorithm, secret_key
+from core.config import algorithm, secret_key
 
 
 router = APIRouter()

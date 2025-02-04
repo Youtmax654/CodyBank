@@ -2,7 +2,7 @@ from uuid import UUID
 from pydantic import BaseModel
 from datetime import datetime
 
-from api.models.Account import AccountType
+from models.Account import AccountType
 
 
 class AccountCreateBody(BaseModel):

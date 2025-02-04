@@ -1,4 +1,4 @@
-from api.core.config import algorithm, secret_key
+from core.config import algorithm, secret_key
 import jwt
 from uuid import UUID
 

@@ -2,7 +2,6 @@ from enum import Enum
 from uuid import UUID, uuid4
 from sqlmodel import SQLModel, Field
 from datetime import datetime
-from enum import Enum
 
 
 class AccountType(Enum):
@@ -20,4 +19,3 @@ class Account(SQLModel, table=True):
     is_active: bool = Field(default=True)
     type: AccountType = Field(nullable=False, default=AccountType.CHECKING)
     iban: str = Field(unique=True, nullable=False)
-

@@ -1,25 +1,20 @@
-from uuid import UUID
 from fastapi.responses import JSONResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-import jwt
-from api.core.config import algorithm, secret_key
-from api.core.db import get_session
+from fastapi.security import HTTPBearer
+from core.db import get_session
 from fastapi import APIRouter, Depends, HTTPException
 from passlib.hash import pbkdf2_sha256
 import random
 
-from api.models.Transaction import TransactionStatus, TransactionType
-from api.models.Account import Account
-from api.models.User import User
-from api.schemas.user import (
+from models.Transaction import TransactionStatus, TransactionType
+from models.Account import Account
+from models.User import User
+from schemas.user import (
     CreateUserBody,
     LoginUserBody,
-    UpdatePasswordBody,
     UserResponse,
 )
-from api.services.transaction_service import create_transaction
-from api.services.user_service import generate_token
-from api.core.db import get_session
+from services.transaction_service import create_transaction
+from services.user_service import generate_token
 
 router = APIRouter()
 bearer_scheme = HTTPBearer()

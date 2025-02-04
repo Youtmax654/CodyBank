@@ -1,20 +1,18 @@
 import random
 from uuid import UUID
-
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 import jwt
-from api.core.config import algorithm, secret_key
-from api.models.Transaction import TransactionStatus
-from api.services.account_service import (
+from core.config import algorithm, secret_key
+from models.Transaction import TransactionStatus
+from services.account_service import (
     get_primary_by_user_id,
     get_transactions_by_account_id,
 )
 from fastapi import APIRouter, Depends, HTTPException
 from typing import List
-from api.core.config import algorithm, secret_key
-from api.core.db import get_session
-from api.models.Account import Account, AccountType
-from api.schemas.account import (
+from core.db import get_session
+from models.Account import Account
+from schemas.account import (
     AccountCreateBody,
     AccountDetailResponse,
     AccountResponse,

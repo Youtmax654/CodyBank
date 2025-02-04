@@ -1,19 +1,18 @@
 from uuid import UUID
-from api.models.Account import Account
-from api.models.Beneficiary import Beneficiary
+from models.Account import Account
+from models.Beneficiary import Beneficiary
 from fastapi import APIRouter, Depends, HTTPException
-from api.core.config import algorithm, secret_key
+from core.config import algorithm, secret_key
 import jwt
-from api.core.db import get_session
+from core.db import get_session
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from api.schemas.beneficiary import (
+from schemas.beneficiary import (
     BeneficiaryBody,
     BeneficiaryResponse,
     BeneficiaryUpdateBody,
 )
-from api.services.transaction_service import (
+from services.transaction_service import (
     get_account_by_iban,
-    get_account_by_id,
 )
 
 
